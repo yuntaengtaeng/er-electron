@@ -13,5 +13,11 @@ export default tseslint.config(
         ...globals.node,
       },
     },
+    rules: {
+      "@typescript-eslint/no-empty-object-type": [
+        "error",
+        { allowInterfaces: "with-single-extends" },
+      ],
+    },
   },
 );
