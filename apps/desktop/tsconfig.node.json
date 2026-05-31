@@ -1,0 +1,4 @@
+{
+  "extends": "@repo/typescript-config/electron-node.json",
+  "include": ["src/main/**/*", "src/preload/**/*", "electron.vite.config.ts"]
+}

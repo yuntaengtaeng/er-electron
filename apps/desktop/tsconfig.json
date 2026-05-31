@@ -1,0 +1,10 @@
+{
+  "extends": "@repo/typescript-config/electron-renderer.json",
+  "compilerOptions": {
+    "paths": {
+      "@renderer/*": ["./src/renderer/src/*"]
+    }
+  },
+  "include": ["src/renderer/src/**/*", "electron.vite.config.ts"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
