@@ -338,6 +338,13 @@ export interface UserStats {
 }
 
 export interface UserInfo {
+  userId: string;
+  nickname: string;
+}
+
+export interface TopRank {
+  rank: number;
   userNum: number;
   nickname: string;
+  mmr: number;
 }

@@ -6,6 +6,7 @@ export type {
   CharacterStat,
   UserStats,
   UserInfo,
+  TopRank,
 } from "./user";
 export type {
   RecommendWeaponRoute,

@@ -5,6 +5,8 @@ export enum MatchingMode {
 }
 
 export enum MatchingTeamMode {
+  Solo = 1,
+  Duo = 2,
   Trio = 3,
   Quad = 4,
 }
