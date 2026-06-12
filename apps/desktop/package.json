@@ -10,19 +10,22 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@repo/design-system": "workspace:*",
     "@repo/ui": "workspace:*",
-    "electron-updater": "^6.1.7"
+    "electron-updater": "^6.1.7",
+    "react-router-dom": "^7.16.0",
+    "styled-components": "^6.4.2"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/react": "^19.2.15",
-    "eslint": "^9.0.0",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.2.0",
     "electron": "^42.3.0",
     "electron-builder": "^26.8.1",
     "electron-vite": "^5.0.0",
+    "eslint": "^9.0.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "typescript": "^6.0.3",
