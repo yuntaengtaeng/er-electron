@@ -1,0 +1,674 @@
+{
+  "infusions": [
+    {
+      "id": 1,
+      "productType": "Trait",
+      "productId": 7910101
+    },
+    {
+      "id": 2,
+      "productType": "Trait",
+      "productId": 7910111
+    },
+    {
+      "id": 3,
+      "productType": "Trait",
+      "productId": 7910121
+    },
+    {
+      "id": 4,
+      "productType": "Trait",
+      "productId": 7910201
+    },
+    {
+      "id": 5,
+      "productType": "Trait",
+      "productId": 7910211
+    },
+    {
+      "id": 6,
+      "productType": "Trait",
+      "productId": 7910221
+    },
+    {
+      "id": 7,
+      "productType": "Trait",
+      "productId": 7910301
+    },
+    {
+      "id": 8,
+      "productType": "Trait",
+      "productId": 7910311
+    },
+    {
+      "id": 9,
+      "productType": "Trait",
+      "productId": 7910321
+    },
+    {
+      "id": 10,
+      "productType": "Trait",
+      "productId": 7910401
+    },
+    {
+      "id": 11,
+      "productType": "Trait",
+      "productId": 7910411
+    },
+    {
+      "id": 12,
+      "productType": "Trait",
+      "productId": 7910421
+    },
+    {
+      "id": 13,
+      "productType": "Trait",
+      "productId": 7910501
+    },
+    {
+      "id": 14,
+      "productType": "Trait",
+      "productId": 7910511
+    },
+    {
+      "id": 15,
+      "productType": "Trait",
+      "productId": 7910521
+    },
+    {
+      "id": 16,
+      "productType": "Trait",
+      "productId": 7910601
+    },
+    {
+      "id": 17,
+      "productType": "Trait",
+      "productId": 7910611
+    },
+    {
+      "id": 18,
+      "productType": "Trait",
+      "productId": 7910621
+    },
+    {
+      "id": 19,
+      "productType": "Trait",
+      "productId": 7920101
+    },
+    {
+      "id": 20,
+      "productType": "Trait",
+      "productId": 7920102
+    },
+    {
+      "id": 21,
+      "productType": "Trait",
+      "productId": 7920103
+    },
+    {
+      "id": 22,
+      "productType": "Trait",
+      "productId": 7920301
+    },
+    {
+      "id": 23,
+      "productType": "Trait",
+      "productId": 7920302
+    },
+    {
+      "id": 24,
+      "productType": "Trait",
+      "productId": 7920303
+    },
+    {
+      "id": 25,
+      "productType": "Trait",
+      "productId": 7920401
+    },
+    {
+      "id": 26,
+      "productType": "Trait",
+      "productId": 7920402
+    },
+    {
+      "id": 27,
+      "productType": "Trait",
+      "productId": 7920403
+    },
+    {
+      "id": 28,
+      "productType": "Trait",
+      "productId": 7920501
+    },
+    {
+      "id": 29,
+      "productType": "Trait",
+      "productId": 7920502
+    },
+    {
+      "id": 30,
+      "productType": "Trait",
+      "productId": 7920503
+    },
+    {
+      "id": 31,
+      "productType": "Trait",
+      "productId": 7920603
+    },
+    {
+      "id": 32,
+      "productType": "Trait",
+      "productId": 7910701
+    },
+    {
+      "id": 33,
+      "productType": "Trait",
+      "productId": 7910711
+    },
+    {
+      "id": 34,
+      "productType": "Trait",
+      "productId": 7910721
+    },
+    {
+      "id": 35,
+      "productType": "Trait",
+      "productId": 7920801
+    },
+    {
+      "id": 36,
+      "productType": "Trait",
+      "productId": 7920802
+    },
+    {
+      "id": 37,
+      "productType": "Trait",
+      "productId": 7920803
+    },
+    {
+      "id": 38,
+      "productType": "Trait",
+      "productId": 7920903
+    },
+    {
+      "id": 39,
+      "productType": "Trait",
+      "productId": 7921003
+    },
+    {
+      "id": 40,
+      "productType": "Trait",
+      "productId": 7921101
+    },
+    {
+      "id": 41,
+      "productType": "Trait",
+      "productId": 7921102
+    },
+    {
+      "id": 42,
+      "productType": "Trait",
+      "productId": 7921103
+    },
+    {
+      "id": 43,
+      "productType": "Trait",
+      "productId": 7921203
+    },
+    {
+      "id": 44,
+      "productType": "Trait",
+      "productId": 7921301
+    },
+    {
+      "id": 45,
+      "productType": "Trait",
+      "productId": 7921302
+    },
+    {
+      "id": 46,
+      "productType": "Trait",
+      "productId": 7921303
+    },
+    {
+      "id": 47,
+      "productType": "Trait",
+      "productId": 7921401
+    },
+    {
+      "id": 48,
+      "productType": "Trait",
+      "productId": 7921402
+    },
+    {
+      "id": 49,
+      "productType": "Trait",
+      "productId": 7921403
+    },
+    {
+      "id": 50,
+      "productType": "Trait",
+      "productId": 7921501
+    },
+    {
+      "id": 51,
+      "productType": "Trait",
+      "productId": 7921502
+    },
+    {
+      "id": 52,
+      "productType": "Trait",
+      "productId": 7921503
+    },
+    {
+      "id": 53,
+      "productType": "Trait",
+      "productId": 7921602
+    },
+    {
+      "id": 54,
+      "productType": "Trait",
+      "productId": 7921701
+    },
+    {
+      "id": 55,
+      "productType": "Trait",
+      "productId": 7921702
+    },
+    {
+      "id": 56,
+      "productType": "Trait",
+      "productId": 7921703
+    },
+    {
+      "id": 57,
+      "productType": "Trait",
+      "productId": 7922102
+    },
+    {
+      "id": 58,
+      "productType": "Trait",
+      "productId": 7922201
+    },
+    {
+      "id": 59,
+      "productType": "Trait",
+      "productId": 7922202
+    },
+    {
+      "id": 60,
+      "productType": "Trait",
+      "productId": 7922203
+    },
+    {
+      "id": 61,
+      "productType": "Trait",
+      "productId": 7922302
+    },
+    {
+      "id": 62,
+      "productType": "Trait",
+      "productId": 7922402
+    },
+    {
+      "id": 63,
+      "productType": "Trait",
+      "productId": 7922502
+    },
+    {
+      "id": 64,
+      "productType": "Trait",
+      "productId": 7922602
+    },
+    {
+      "id": 65,
+      "productType": "Trait",
+      "productId": 7922702
+    },
+    {
+      "id": 66,
+      "productType": "Trait",
+      "productId": 7921903
+    },
+    {
+      "id": 67,
+      "productType": "Special",
+      "productId": 9000001
+    },
+    {
+      "id": 68,
+      "productType": "Trait",
+      "productId": 7922803
+    },
+    {
+      "id": 69,
+      "productType": "Trait",
+      "productId": 7922903
+    },
+    {
+      "id": 70,
+      "productType": "Trait",
+      "productId": 7923101
+    },
+    {
+      "id": 71,
+      "productType": "Trait",
+      "productId": 7923102
+    },
+    {
+      "id": 72,
+      "productType": "Trait",
+      "productId": 7923103
+    },
+    {
+      "id": 73,
+      "productType": "Trait",
+      "productId": 7923302
+    },
+    {
+      "id": 74,
+      "productType": "Trait",
+      "productId": 7923401
+    },
+    {
+      "id": 75,
+      "productType": "Trait",
+      "productId": 7923411
+    },
+    {
+      "id": 76,
+      "productType": "Trait",
+      "productId": 7923421
+    },
+    {
+      "id": 77,
+      "productType": "Trait",
+      "productId": 7923502
+    },
+    {
+      "id": 78,
+      "productType": "Trait",
+      "productId": 7923602
+    },
+    {
+      "id": 79,
+      "productType": "Trait",
+      "productId": 7923703
+    },
+    {
+      "id": 80,
+      "productType": "Trait",
+      "productId": 7923803
+    },
+    {
+      "id": 81,
+      "productType": "Trait",
+      "productId": 7923903
+    },
+    {
+      "id": 82,
+      "productType": "Trait",
+      "productId": 7923002
+    },
+    {
+      "id": 83,
+      "productType": "Trait",
+      "productId": 7923201
+    },
+    {
+      "id": 84,
+      "productType": "Trait",
+      "productId": 7923202
+    },
+    {
+      "id": 85,
+      "productType": "Trait",
+      "productId": 7923203
+    },
+    {
+      "id": 86,
+      "productType": "Trait",
+      "productId": 7923201
+    },
+    {
+      "id": 87,
+      "productType": "Trait",
+      "productId": 7923202
+    },
+    {
+      "id": 88,
+      "productType": "Trait",
+      "productId": 7923203
+    },
+    {
+      "id": 89,
+      "productType": "Item",
+      "productId": 705602
+    },
+    {
+      "id": 1000,
+      "productType": "Item",
+      "productId": 401402
+    },
+    {
+      "id": 1001,
+      "productType": "Item",
+      "productId": 401402
+    },
+    {
+      "id": 1002,
+      "productType": "Item",
+      "productId": 401402
+    },
+    {
+      "id": 1003,
+      "productType": "Item",
+      "productId": 502212
+    },
+    {
+      "id": 1004,
+      "productType": "Item",
+      "productId": 307001
+    },
+    {
+      "id": 1005,
+      "productType": "Relic_Gamechanger",
+      "productId": 705619
+    },
+    {
+      "id": 1006,
+      "productType": "Relic_Modifier",
+      "productId": 705603
+    },
+    {
+      "id": 1007,
+      "productType": "Relic_Gamechanger",
+      "productId": 705608
+    },
+    {
+      "id": 1008,
+      "productType": "Relic_Gamechanger",
+      "productId": 705613
+    },
+    {
+      "id": 1009,
+      "productType": "Relic_Gamechanger",
+      "productId": 705605
+    },
+    {
+      "id": 1010,
+      "productType": "Relic_Navigator",
+      "productId": 705612
+    },
+    {
+      "id": 1011,
+      "productType": "Relic_Modifier",
+      "productId": 705614
+    },
+    {
+      "id": 1012,
+      "productType": "Relic_Gamechanger",
+      "productId": 705615
+    },
+    {
+      "id": 1013,
+      "productType": "Relic_Navigator",
+      "productId": 705620
+    },
+    {
+      "id": 1014,
+      "productType": "Relic_Gamechanger",
+      "productId": 705607
+    },
+    {
+      "id": 1015,
+      "productType": "Relic_Gamechanger",
+      "productId": 705612
+    },
+    {
+      "id": 1016,
+      "productType": "Relic_Modifier",
+      "productId": 705614
+    },
+    {
+      "id": 1017,
+      "productType": "Relic_Gamechanger",
+      "productId": 705615
+    },
+    {
+      "id": 1018,
+      "productType": "Relic_Gamechanger",
+      "productId": 705608
+    },
+    {
+      "id": 1019,
+      "productType": "Relic_Gamechanger",
+      "productId": 705621
+    },
+    {
+      "id": 1020,
+      "productType": "Relic_Gamechanger",
+      "productId": 705620
+    },
+    {
+      "id": 2000,
+      "productType": "TacticalSkill",
+      "productId": 500080
+    },
+    {
+      "id": 2001,
+      "productType": "TacticalSkill",
+      "productId": 500220
+    },
+    {
+      "id": 2002,
+      "productType": "TacticalSkill",
+      "productId": 500150
+    },
+    {
+      "id": 2003,
+      "productType": "TacticalSkill",
+      "productId": 500130
+    },
+    {
+      "id": 2004,
+      "productType": "TacticalSkill",
+      "productId": 500160
+    },
+    {
+      "id": 2005,
+      "productType": "TacticalSkill",
+      "productId": 500210
+    },
+    {
+      "id": 2006,
+      "productType": "TacticalSkill",
+      "productId": 500200
+    },
+    {
+      "id": 2007,
+      "productType": "TacticalSkill",
+      "productId": 500120
+    },
+    {
+      "id": 2008,
+      "productType": "TacticalSkill",
+      "productId": 500240
+    },
+    {
+      "id": 2009,
+      "productType": "TacticalSkill",
+      "productId": 500090
+    },
+    {
+      "id": 2010,
+      "productType": "TacticalSkill",
+      "productId": 500170
+    },
+    {
+      "id": 2011,
+      "productType": "TacticalSkill",
+      "productId": 500180
+    },
+    {
+      "id": 2012,
+      "productType": "TacticalSkill",
+      "productId": 500190
+    },
+    {
+      "id": 2013,
+      "productType": "TacticalSkill",
+      "productId": 500230
+    },
+    {
+      "id": 2014,
+      "productType": "TacticalSkill",
+      "productId": 500050
+    },
+    {
+      "id": 2015,
+      "productType": "TacticalSkill",
+      "productId": 500060
+    },
+    {
+      "id": 2016,
+      "productType": "TacticalSkill",
+      "productId": 500140
+    },
+    {
+      "id": 2017,
+      "productType": "TacticalSkill",
+      "productId": 500250
+    },
+    {
+      "id": 2018,
+      "productType": "TacticalSkill",
+      "productId": 500260
+    },
+    {
+      "id": 2019,
+      "productType": "TacticalSkill",
+      "productId": 500270
+    },
+    {
+      "id": 2020,
+      "productType": "TacticalSkill",
+      "productId": 500280
+    },
+    {
+      "id": 10000,
+      "productType": "Trait",
+      "productId": 7922003
+    },
+    {
+      "id": 10001,
+      "productType": "EquipItemSelector",
+      "productId": 0
+    },
+    {
+      "id": 10002,
+      "productType": "EquipItemMythicSelector",
+      "productId": 0
+    }
+  ]
+}

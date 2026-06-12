@@ -1,0 +1,189 @@
+{
+  "areas": [
+    {
+      "id": 10,
+      "key": "Harbor",
+      "name": "항구"
+    },
+    {
+      "id": 20,
+      "key": "Warehouse",
+      "name": "창고"
+    },
+    {
+      "id": 30,
+      "key": "Pond",
+      "name": "연못"
+    },
+    {
+      "id": 40,
+      "key": "Stream",
+      "name": "개울"
+    },
+    {
+      "id": 50,
+      "key": "SandyBeach",
+      "name": "모래사장"
+    },
+    {
+      "id": 60,
+      "key": "Uptown",
+      "name": "고급 주택가"
+    },
+    {
+      "id": 70,
+      "key": "Alley",
+      "name": "골목길"
+    },
+    {
+      "id": 80,
+      "key": "GasStation",
+      "name": "주유소"
+    },
+    {
+      "id": 90,
+      "key": "Hotel",
+      "name": "호텔"
+    },
+    {
+      "id": 100,
+      "key": "PoliceStation",
+      "name": "경찰서"
+    },
+    {
+      "id": 110,
+      "key": "FireStaton",
+      "name": "소방서"
+    },
+    {
+      "id": 120,
+      "key": "Hospital",
+      "name": "병원"
+    },
+    {
+      "id": 130,
+      "key": "Temple",
+      "name": "절"
+    },
+    {
+      "id": 140,
+      "key": "Archery",
+      "name": "양궁장"
+    },
+    {
+      "id": 150,
+      "key": "Cemetery",
+      "name": "묘지"
+    },
+    {
+      "id": 160,
+      "key": "Forest",
+      "name": "숲"
+    },
+    {
+      "id": 170,
+      "key": "Factory",
+      "name": "공장"
+    },
+    {
+      "id": 180,
+      "key": "Church",
+      "name": "성당"
+    },
+    {
+      "id": 190,
+      "key": "School",
+      "name": "학교"
+    },
+    {
+      "id": 200,
+      "key": "Barge",
+      "name": "바지선"
+    },
+    {
+      "id": 1000,
+      "key": "Laboratory",
+      "name": "연구소"
+    },
+    {
+      "id": 1010,
+      "key": "BriefingRoom",
+      "name": "브리핑 룸"
+    },
+    {
+      "id": 1020,
+      "key": "EscapeM",
+      "name": "???"
+    },
+    {
+      "id": 1030,
+      "key": "EscapeA",
+      "name": "???"
+    },
+    {
+      "id": 1040,
+      "key": "EscapeB",
+      "name": "???"
+    },
+    {
+      "id": 1050,
+      "key": "ValutLaboratory",
+      "name": "크레딧 연구실"
+    },
+    {
+      "id": 1060,
+      "key": "MutantLaboratory",
+      "name": "변이체 연구실"
+    },
+    {
+      "id": 1070,
+      "key": "AbandonedLaboratory",
+      "name": "버려진 연구실"
+    },
+    {
+      "id": 1080,
+      "key": "AzureLaboratory",
+      "name": "푸른색 연구실"
+    },
+    {
+      "id": 2010,
+      "key": "Cobalt1",
+      "name": "우측 전장"
+    },
+    {
+      "id": 2020,
+      "key": "Cobalt2",
+      "name": "중앙 전장"
+    },
+    {
+      "id": 2030,
+      "key": "Cobalt3",
+      "name": "좌측 전장"
+    },
+    {
+      "id": 2040,
+      "key": "Cobalt4",
+      "name": "안전 지대"
+    },
+    {
+      "id": 2050,
+      "key": "Cobalt5",
+      "name": "안전 지대"
+    },
+    {
+      "id": 2060,
+      "key": "Cobalt6",
+      "name": "감마 지역"
+    },
+    {
+      "id": 2070,
+      "key": "SituationAreaA",
+      "name": "상황실"
+    },
+    {
+      "id": 2080,
+      "key": "SituationAreaB",
+      "name": "상황실"
+    }
+  ]
+}

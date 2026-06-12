@@ -1,0 +1,67 @@
+{
+  "weathers": [
+    {
+      "key": 10001,
+      "type": "Main",
+      "name": "흐림",
+      "tooltip": "아무런 효과도 적용되지 않는 루미아 섬의 기본 환경입니다.",
+      "imageUrl": "https://cdn.dak.gg/assets/er/game-assets/11.4.0/Ico_Weather_Lobby_10001.png"
+    },
+    {
+      "key": 10002,
+      "type": "Main",
+      "name": "쾌청",
+      "tooltip": "루미아 섬의 부쉬가 전체적으로 감소하며 시야가 증가합니다.\n음식의 회복량이 증가합니다.\n식재료 채집 포인트의 희귀 재료 획득 확률이 증가합니다.",
+      "imageUrl": "https://cdn.dak.gg/assets/er/game-assets/11.4.0/Ico_Weather_Lobby_10002.png"
+    },
+    {
+      "key": 10003,
+      "type": "Main",
+      "name": "비",
+      "tooltip": "루미아 섬의 부쉬가 전체적으로 증가합니다.\n비로 인해 청음 거리가 감소하며 야생동물의 공격력이 감소합니다.",
+      "imageUrl": "https://cdn.dak.gg/assets/er/game-assets/11.4.0/Ico_Weather_Lobby_10003.png"
+    },
+    {
+      "key": 10004,
+      "type": "Main",
+      "name": "모래바람",
+      "tooltip": "거친 모래바람을 극복한 실험체들이 방해 효과 저항을 획득합니다.\n접촉 대상을 대상 지정 불가 상태로 만드는 소용돌이가 생성됩니다.",
+      "imageUrl": "https://cdn.dak.gg/assets/er/game-assets/11.4.0/Ico_Weather_Lobby_10004.png"
+    },
+    {
+      "key": 10501,
+      "type": "Sub",
+      "name": "무풍",
+      "tooltip": "아무런 효과도 적용되지 않는 루미아 섬의 기본 환경입니다.",
+      "imageUrl": "https://cdn.dak.gg/assets/er/game-assets/11.4.0/Ico_Weather_Lobby_10501.png"
+    },
+    {
+      "key": 10502,
+      "type": "Sub",
+      "name": "안개",
+      "tooltip": "안개로 인해 정보가 제한됩니다.\n항공 보급 상자의 위치가 노출되지 않습니다.",
+      "imageUrl": "https://cdn.dak.gg/assets/er/game-assets/11.4.0/Ico_Weather_Lobby_10502.png"
+    },
+    {
+      "key": 10503,
+      "type": "Sub",
+      "name": "강풍",
+      "tooltip": "실험체의 기본 이동 속도가 증가합니다.\n특정 지역에 한 방향으로 이동 속도를 증가시키는 강풍 지대가 생성됩니다.",
+      "imageUrl": "https://cdn.dak.gg/assets/er/game-assets/11.4.0/Ico_Weather_Lobby_10503.png"
+    },
+    {
+      "key": 10504,
+      "type": "Sub",
+      "name": "벼락",
+      "tooltip": "금지구역을 제외한 임의의 지역에 벼락이 내려칩니다.\n실험 시간이 경과함에 따라 빈도가 증가합니다.",
+      "imageUrl": "https://cdn.dak.gg/assets/er/game-assets/11.4.0/Ico_Weather_Lobby_10504.png"
+    },
+    {
+      "key": 10505,
+      "type": "Sub",
+      "name": "자색안개",
+      "tooltip": "야생 동물에게 주는 피해가 증가하고, 변이체 야생 동물이 보다 많이 등장합니다.\n가끔씩 일부 지역에 강력한 몬스터들이 숨어있는 안개 영역이 퍼집니다.",
+      "imageUrl": "https://cdn.dak.gg/assets/er/game-assets/11.4.0/Ico_Weather_Lobby_10505.png"
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "monsters": [
+    {
+      "id": 1,
+      "key": "Chicken",
+      "name": "닭"
+    },
+    {
+      "id": 2,
+      "key": "Bat",
+      "name": "박쥐"
+    },
+    {
+      "id": 3,
+      "key": "Boar",
+      "name": "맷돼지"
+    },
+    {
+      "id": 4,
+      "key": "WildDog",
+      "name": "들개"
+    },
+    {
+      "id": 5,
+      "key": "Wolf",
+      "name": "늑대"
+    },
+    {
+      "id": 6,
+      "key": "Bear",
+      "name": "곰"
+    },
+    {
+      "id": 7,
+      "key": "Wickeline",
+      "name": "위클라인"
+    },
+    {
+      "id": 8,
+      "key": "Alpha",
+      "name": "알파"
+    },
+    {
+      "id": 9,
+      "key": "Omega",
+      "name": "오메가"
+    },
+    {
+      "id": 10,
+      "key": "Gamma",
+      "name": "감마"
+    },
+    {
+      "id": 11,
+      "key": "Drone",
+      "name": "드론"
+    },
+    {
+      "id": 12,
+      "key": "MutantChicken",
+      "name": "닭"
+    },
+    {
+      "id": 13,
+      "key": "MutantBat",
+      "name": "변이 박쥐"
+    },
+    {
+      "id": 14,
+      "key": "MutantBoar",
+      "name": "변이 맷돼지"
+    },
+    {
+      "id": 15,
+      "key": "MutantWildDog",
+      "name": "변이 들개"
+    },
+    {
+      "id": 16,
+      "key": "MutantWolf",
+      "name": "변이 늑대"
+    },
+    {
+      "id": 17,
+      "key": "MutantBear",
+      "name": "변이 곰"
+    },
+    {
+      "id": 100,
+      "key": "Turret",
+      "name": "터렛"
+    }
+  ]
+}
