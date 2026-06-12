@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@repo/design-system": "workspace:*",
+    "@repo/service": "workspace:*",
+    "@repo/er-type": "workspace:*",
     "@repo/ui": "workspace:*",
     "electron-updater": "^6.1.7",
     "react-router-dom": "^7.16.0",
