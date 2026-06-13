@@ -1,6 +1,10 @@
+/// <reference types="vite/client" />
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined
+
 export const CONNECT_SRC = [
   'https://open-api.bser.io',
-  // 새로운 외부 API 추가 시 여기에 URL 추가
+  ...(supabaseUrl ? [supabaseUrl] : []),
 ]
 
 export function buildCSP(isDev: boolean): string {
