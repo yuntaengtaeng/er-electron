@@ -2,8 +2,8 @@
 import { useNavigate } from "react-router-dom";
 import styled, { css } from "styled-components";
 import { Button, Text } from "@repo/ui";
-import { useTopRankers } from "../hooks/useTopRankers";
-import { TopRankersSection } from "./TopRankersSection";
+import { useClubMembers } from "../hooks/useClubMembers";
+import { ClubRankingSection } from "./ClubRankingSection";
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -97,7 +97,7 @@ const RankSection = styled.div`
 export default function HomePage() {
   const navigate = useNavigate();
   const [value, setValue] = useState("");
-  const topRankers = useTopRankers();
+  const clubMembers = useClubMembers();
 
   const doSearch = () => {
     const trimmed = value.trim();
@@ -131,9 +131,9 @@ export default function HomePage() {
         </SearchRow>
       </HeroSection>
 
-      {topRankers.length > 0 && (
+      {clubMembers.length > 0 && (
         <RankSection>
-          <TopRankersSection rankers={topRankers} />
+          <ClubRankingSection members={clubMembers} />
         </RankSection>
       )}
     </PageWrapper>
