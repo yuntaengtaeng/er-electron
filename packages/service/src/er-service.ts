@@ -10,7 +10,7 @@ export function initErService(apiKey: string): void {
 
 export const CURRENT_SEASON_ID = 39;
 
-export async function getUserByNickname(nickname: string): Promise<UserInfo> {
+export const getUserByNickname = async (nickname: string): Promise<UserInfo> => {
   return erApiClient.getUserByNickname(nickname);
 }
 

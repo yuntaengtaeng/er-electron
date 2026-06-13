@@ -1,5 +1,5 @@
 {
-  "name": "@repo/service",
+  "name": "@repo/club-store",
   "version": "0.0.0",
   "private": true,
   "main": "./src/index.ts",
@@ -9,9 +9,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/er-api-client": "workspace:*",
-    "@repo/er-type": "workspace:*",
-    "@repo/club-store": "workspace:*"
+    "@supabase/supabase-js": "^2.108.1"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
