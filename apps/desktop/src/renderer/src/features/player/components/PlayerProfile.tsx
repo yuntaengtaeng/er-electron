@@ -1,30 +1,14 @@
-﻿import type { CharacterStat, UserStats } from "@repo/er-type";
+import type { CharacterStat, UserStats } from "@repo/er-type";
 import styled, { css } from "styled-components";
-import { Button, Text } from "@repo/ui";
+import { Button, Spinner, Text } from "@repo/ui";
 import {
   getCharacterById,
   getTierByMmr,
   normalizeImageUrl,
 } from "../../../shared/utils/meta";
-
-// 티어별 테마 색상 — 게임 도메인 전용 상수
-const TIER_COLORS: Record<string, string> = {
-  Unrank: "#6b7280",
-  Iron: "#9ca3af",
-  Bronze: "#cd7f32",
-  Silver: "#c0c0c0",
-  Gold: "#ffd700",
-  Platinum: "#4dd0e1",
-  Diamond: "#60a5fa",
-  Meteorite: "#a78bfa",
-  Mithril: "#67e8f9",
-  Demigod: "#fb923c",
-  Eternity: "#f43f5e",
-};
-
-function tierColor(tierKey: string | undefined): string {
-  return TIER_COLORS[tierKey ?? "Unrank"] ?? TIER_COLORS.Unrank;
-}
+import { getTierColor } from "../../../shared/constants/tierColors";
+import { timeAgo } from "../../../shared/utils/format";
+import type { RegistrationState } from "./PlayerPage";
 
 // ─── styled ───────────────────────────────────────────────────────────────────
 const Section = styled.div`
@@ -125,6 +109,18 @@ const Primary = styled.span`
   font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
 `;
 
+const ActionGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: ${({ theme }) => theme.spacing[2]};
+`;
+
+const UpdatedText = styled.span`
+  ${({ theme }) => css(theme.typography.styles.micro)}
+  color: ${({ theme }) => theme.colors.text.tertiary};
+`;
+
 // ─── component ────────────────────────────────────────────────────────────────
 interface Props {
   nickname: string;
@@ -134,6 +130,11 @@ interface Props {
   winRate: string;
   gamesCount: number;
   topCharacter: CharacterStat | null;
+  registrationState: RegistrationState;
+  lastUpdatedAt: string | null;
+  isRefreshing: boolean;
+  onRegister: () => void;
+  onRefresh: () => void;
 }
 
 export function PlayerProfile({
@@ -144,12 +145,17 @@ export function PlayerProfile({
   winRate,
   gamesCount,
   topCharacter,
+  registrationState,
+  lastUpdatedAt,
+  isRefreshing,
+  onRegister,
+  onRefresh,
 }: Props) {
   const topChar = topCharacter
     ? getCharacterById(topCharacter.characterCode)
     : null;
   const tier = stats ? getTierByMmr(stats.mmr) : null;
-  const color = tierColor(tier?.key);
+  const color = getTierColor(tier?.key);
 
   return (
     <Section>
@@ -206,8 +212,26 @@ export function PlayerProfile({
         </Info>
       </Left>
 
-      <Button variant="outlined">업데이트</Button>
+      <ActionGroup>
+        {(registrationState === "checking" ||
+          registrationState === "registering") && <Spinner size="sm" />}
+        {(registrationState === "unregistered" ||
+          registrationState === "registering") && (
+          <Button
+            variant="pill"
+            onClick={onRegister}
+            disabled={registrationState === "registering"}
+          >
+            {registrationState === "registering" ? "등록 중..." : "등록하기"}
+          </Button>
+        )}
+        <Button variant="outlined" onClick={onRefresh} disabled={isRefreshing}>
+          {isRefreshing ? "갱신 중..." : "갱신하기"}
+        </Button>
+        {lastUpdatedAt && (
+          <UpdatedText>갱신 {timeAgo(lastUpdatedAt)}</UpdatedText>
+        )}
+      </ActionGroup>
     </Section>
   );
 }
-

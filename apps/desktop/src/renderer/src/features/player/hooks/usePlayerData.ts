@@ -27,9 +27,10 @@ interface PlayerData {
   hasNext: boolean;
   goNext: () => void;
   goPrev: () => void;
+  refresh: () => Promise<UserStats | null>;
 }
 
-export function usePlayerData(nickname: string): PlayerData {
+export const usePlayerData = (nickname: string): PlayerData => {
   const [userId, setUserId] = useState<string | null>(null);
   const [games, setGames] = useState<UserGame[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -46,11 +47,12 @@ export function usePlayerData(nickname: string): PlayerData {
     setError(null);
     setGames([]);
     setStats(null);
+    setUserId(null);
     setCursors([undefined]);
     setPage(0);
     setNextCursor(undefined);
 
-    (async () => {
+    const fetch = async () => {
       try {
         const userInfo = await getUserByNickname(nickname);
         if (cancelled) return;
@@ -70,8 +72,9 @@ export function usePlayerData(nickname: string): PlayerData {
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
+    };
 
+    fetch();
     return () => { cancelled = true; };
   }, [nickname]);
 
@@ -87,9 +90,7 @@ export function usePlayerData(nickname: string): PlayerData {
         setCursors((prev) => [...prev, nextCursor]);
         setPage((p) => p + 1);
       })
-      .catch((e) => {
-        setError(e instanceof Error ? e.message : "오류가 발생했습니다.");
-      })
+      .catch((e) => setError(e instanceof Error ? e.message : "오류가 발생했습니다."))
       .finally(() => setLoading(false));
   }, [userId, nextCursor]);
 
@@ -106,32 +107,48 @@ export function usePlayerData(nickname: string): PlayerData {
         setCursors((prev) => prev.slice(0, page));
         setPage((p) => p - 1);
       })
-      .catch((e) => {
-        setError(e instanceof Error ? e.message : "오류가 발생했습니다.");
-      })
+      .catch((e) => setError(e instanceof Error ? e.message : "오류가 발생했습니다."))
       .finally(() => setLoading(false));
   }, [userId, page, cursors]);
 
+  const refresh = useCallback(async (): Promise<UserStats | null> => {
+    if (!userId) return null;
+    setLoading(true);
+    setError(null);
+    try {
+      const [gamesResult, statsData] = await Promise.all([
+        getUserGames(userId),
+        getUserStats(userId),
+      ]);
+      setGames(gamesResult.games);
+      setNextCursor(gamesResult.next);
+      setCursors([undefined]);
+      setPage(0);
+      setStats(statsData);
+      return statsData;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "오류가 발생했습니다.");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
   const wins = games.filter((g) => g.gameRank === 1).length;
   const losses = games.length - wins;
-  const winRate =
-    games.length > 0 ? ((wins / games.length) * 100).toFixed(1) : "0.0";
-  const avgKills =
-    games.length > 0
-      ? (games.reduce((s, g) => s + g.playerKill, 0) / games.length).toFixed(1)
-      : "0.0";
-  const avgAssists =
-    games.length > 0
-      ? (games.reduce((s, g) => s + g.playerAssistant, 0) / games.length).toFixed(1)
-      : "0.0";
-  const avgDamage =
-    games.length > 0
-      ? Math.round(games.reduce((s, g) => s + g.damageToPlayer, 0) / games.length)
-      : 0;
-  const avgPlacement =
-    games.length > 0
-      ? (games.reduce((s, g) => s + g.gameRank, 0) / games.length).toFixed(1)
-      : "0.0";
+  const winRate = games.length > 0 ? ((wins / games.length) * 100).toFixed(1) : "0.0";
+  const avgKills = games.length > 0
+    ? (games.reduce((s, g) => s + g.playerKill, 0) / games.length).toFixed(1)
+    : "0.0";
+  const avgAssists = games.length > 0
+    ? (games.reduce((s, g) => s + g.playerAssistant, 0) / games.length).toFixed(1)
+    : "0.0";
+  const avgDamage = games.length > 0
+    ? Math.round(games.reduce((s, g) => s + g.damageToPlayer, 0) / games.length)
+    : 0;
+  const avgPlacement = games.length > 0
+    ? (games.reduce((s, g) => s + g.gameRank, 0) / games.length).toFixed(1)
+    : "0.0";
 
   const topCharacters: CharacterGameStats[] = (stats?.characterStats ?? [])
     .sort((a, b) => b.totalGames - a.totalGames)
@@ -142,9 +159,11 @@ export function usePlayerData(nickname: string): PlayerData {
       return {
         ...cs,
         recentGameCount: n,
-        avgKillsRecent:  n > 0 ? charGames.reduce((s, g) => s + g.playerKill, 0) / n : 0,
-        avgTKRecent:     n > 0 ? charGames.reduce((s, g) => s + g.teamKill, 0) / n : 0,
-        avgDamageRecent: n > 0 ? Math.round(charGames.reduce((s, g) => s + g.damageToPlayer, 0) / n) : 0,
+        avgKillsRecent: n > 0 ? charGames.reduce((s, g) => s + g.playerKill, 0) / n : 0,
+        avgTKRecent: n > 0 ? charGames.reduce((s, g) => s + g.teamKill, 0) / n : 0,
+        avgDamageRecent: n > 0
+          ? Math.round(charGames.reduce((s, g) => s + g.damageToPlayer, 0) / n)
+          : 0,
       };
     });
 
@@ -156,7 +175,6 @@ export function usePlayerData(nickname: string): PlayerData {
     page,
     hasPrev: page > 0,
     hasNext: nextCursor != null,
-    goNext,
-    goPrev,
+    goNext, goPrev, refresh,
   };
-}
+};

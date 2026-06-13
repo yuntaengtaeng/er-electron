@@ -338,6 +338,7 @@ export interface UserStats {
 }
 
 export interface UserInfo {
+  userNum?: number;
   userId: string;
   nickname: string;
 }

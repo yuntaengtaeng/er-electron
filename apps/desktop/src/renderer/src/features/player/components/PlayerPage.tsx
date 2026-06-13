@@ -1,13 +1,25 @@
-﻿import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled, { css } from "styled-components";
 import { Button, Text } from "@repo/ui";
+import {
+  CURRENT_SEASON_ID,
+  getMemberByNickname,
+  upsertMember,
+} from "@repo/service";
 import { usePlayerData } from "../hooks/usePlayerData";
 import { PlayerProfile } from "./PlayerProfile";
 import { ProfileStats } from "./ProfileStats";
 import { TopCharacters } from "./TopCharacters";
 import { MatchHistory } from "./MatchHistory";
+import { Loading } from "../../../shared/components/Loading";
 
+export type RegistrationState =
+  | "idle"
+  | "checking"
+  | "registering"
+  | "registered"
+  | "unregistered";
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -79,9 +91,9 @@ const SearchButton = styled.button`
 const ContentWrapper = styled.div`
   max-width: 960px;
   margin: 0 auto;
-  padding: 0 ${({ theme }) => theme.spacing[6]} ${({ theme }) => theme.spacing[16]};
+  padding: 0 ${({ theme }) => theme.spacing[6]}
+    ${({ theme }) => theme.spacing[16]} 0;
 `;
-
 
 const Pagination = styled.div`
   display: flex;
@@ -99,7 +111,9 @@ const PageButton = styled.button`
   color: ${({ theme }) => theme.colors.text.primary};
   ${({ theme }) => css(theme.typography.styles.caption)}
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 
   &:hover:not(:disabled) {
     border-color: ${({ theme }) => theme.colors.brand.green};
@@ -127,10 +141,90 @@ export default function PlayerPage() {
   const [searchValue, setSearchValue] = useState(nickname);
 
   const {
-    games, stats, loading, error,
-    wins, losses, winRate, avgKills, avgAssists, avgDamage, avgPlacement,
-    topCharacters, page, hasPrev, hasNext, goNext, goPrev,
+    games,
+    stats,
+    loading,
+    error,
+    wins,
+    losses,
+    winRate,
+    topCharacters,
+    page,
+    hasPrev,
+    hasNext,
+    goNext,
+    goPrev,
+    refresh,
   } = usePlayerData(nickname);
+
+  const [registrationState, setRegistrationState] =
+    useState<RegistrationState>("idle");
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (!nickname) {
+      setRegistrationState("idle");
+      setLastUpdatedAt(null);
+      return;
+    }
+    setRegistrationState("checking");
+    getMemberByNickname(nickname)
+      .then((member) => {
+        setRegistrationState(member ? "registered" : "unregistered");
+        setLastUpdatedAt(member?.updatedAt ?? null);
+      })
+      .catch(() => setRegistrationState("unregistered"));
+  }, [nickname]);
+
+  const handleRegister = async () => {
+    if (!stats) return;
+    setRegistrationState("registering");
+    try {
+      await upsertMember({
+        nickname,
+        mmr: stats.mmr,
+        rank: stats.rank,
+        rankPercent: stats.rankPercent,
+        seasonId: CURRENT_SEASON_ID,
+        representativeCharacterCode: topCharacters[0]?.characterCode ?? null,
+      });
+      setRegistrationState("registered");
+      getMemberByNickname(nickname)
+        .then((member) => setLastUpdatedAt(member?.updatedAt ?? null))
+        .catch(() => {});
+    } catch {
+      setRegistrationState("unregistered");
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const freshStats = await refresh();
+      if (registrationState === "registered" && freshStats) {
+        const freshTopCharCode =
+          [...freshStats.characterStats].sort(
+            (a, b) => b.totalGames - a.totalGames,
+          )[0]?.characterCode ?? null;
+        await upsertMember({
+          nickname,
+          mmr: freshStats.mmr,
+          rank: freshStats.rank,
+          rankPercent: freshStats.rankPercent,
+          seasonId: CURRENT_SEASON_ID,
+          representativeCharacterCode: freshTopCharCode,
+        });
+        getMemberByNickname(nickname)
+          .then((member) => setLastUpdatedAt(member?.updatedAt ?? null))
+          .catch(() => {});
+      }
+    } catch {
+      // 갱신 실패는 조용히 처리
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const doSearch = () => {
     const trimmed = searchValue.trim();
@@ -140,7 +234,9 @@ export default function PlayerPage() {
   return (
     <PageWrapper>
       <TopBar>
-        <Button variant="outlined" onClick={() => navigate(-1)}>← 뒤로</Button>
+        <Button variant="outlined" onClick={() => navigate(-1)}>
+          ← 뒤로
+        </Button>
         <Logo onClick={() => navigate("/")}>ER STATS</Logo>
         <SearchRow>
           <SearchInput
@@ -153,8 +249,12 @@ export default function PlayerPage() {
       </TopBar>
 
       <ContentWrapper>
-        {loading && <Text variant="body" color="secondary">불러오는 중...</Text>}
-        {error && <Text variant="body" color="secondary">{error}</Text>}
+        {loading && <Loading />}
+        {error && (
+          <Text variant="body" color="secondary">
+            {error}
+          </Text>
+        )}
 
         {!loading && !error && (
           <>
@@ -166,14 +266,23 @@ export default function PlayerPage() {
               winRate={winRate}
               gamesCount={games.length}
               topCharacter={topCharacters[0] ?? null}
+              registrationState={registrationState}
+              lastUpdatedAt={lastUpdatedAt}
+              isRefreshing={isRefreshing}
+              onRegister={handleRegister}
+              onRefresh={handleRefresh}
             />
             <ProfileStats stats={stats} />
             <TopCharacters characterStats={topCharacters} />
             <MatchHistory games={games} />
             <Pagination>
-              <PageButton onClick={goPrev} disabled={!hasPrev}>← 이전</PageButton>
+              <PageButton onClick={goPrev} disabled={!hasPrev}>
+                ← 이전
+              </PageButton>
               <PageLabel>{page + 1} 페이지</PageLabel>
-              <PageButton onClick={goNext} disabled={!hasNext}>다음 →</PageButton>
+              <PageButton onClick={goNext} disabled={!hasNext}>
+                다음 →
+              </PageButton>
             </Pagination>
           </>
         )}
@@ -181,4 +290,3 @@ export default function PlayerPage() {
     </PageWrapper>
   );
 }
-
