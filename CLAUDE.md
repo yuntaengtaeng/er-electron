@@ -176,6 +176,12 @@ getAreaByKey(key)      // e.g. "Harbor" → { name: "항구" }
 - `CURRENT_SEASON_ID = 39` — `packages/service/src/er-service.ts`
 - 게임 목록은 커서 기반 페이지네이션 — API 1회 호출당 10개 반환. `usePlayerData`가 `cursors[]` 히스토리를 관리하며 이전/다음 이동. `goNext(cursor)` / `goPrev(prevCursor)` 콜백으로 페이지 전환
 
+## 코드 작성 규칙
+
+- **ES6+ 최신 문법 사용** — 화살표 함수, `async/await`, `const`/`let`, 구조분해 할당 등 최신 문법을 일관되게 사용
+- `function foo()` 선언식 대신 `const foo = () =>` 화살표 함수 사용
+- `.then().catch()` 체이닝보다 `async/await` 선호
+
 ## 개발 실행
 
 ```bash
