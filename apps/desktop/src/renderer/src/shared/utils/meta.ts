@@ -82,6 +82,8 @@ export const MATERIAL_PRICES: Record<number, number> = {
   401401: 500, // VF 혈액 샘플
   401402: 200, // 진화의 돌 (레거시)
   401403: 350, // 포스 코어
+  401405: 500, // 진홍의 샤드 (VF 혈액 샘플 옵션 재료)
+  401406: 500, // 새벽빛 샤드 (VF 혈액 샘플 옵션 재료)
 };
 
 export const getWeaponTypeFromEquipment = (equipment: Record<string, number>): string => {
