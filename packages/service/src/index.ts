@@ -3,3 +3,5 @@ export { initClubService, getMemberByNickname, upsertMember, getAllClubMembers, 
 export type { ClubMember } from "./club-service";
 export { getCompareStats } from "./compare-service";
 export type { ComparePlayerStats } from "./compare-service";
+export { getItemAnalysis } from "./item-analysis-service";
+export type { ItemAnalysisResult, CharacterItemAnalysis, WeaponTypeAnalysis, SlotItemStat } from "./item-analysis-service";
