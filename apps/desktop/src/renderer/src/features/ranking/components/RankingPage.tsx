@@ -5,6 +5,7 @@ import { getCharacterById, getTierByMmr, normalizeImageUrl } from "../../../shar
 import { getTierColor } from "../../../shared/constants/tierColors";
 import type { ClubMember } from "@repo/service";
 import { useRankingMembers } from "../hooks/useRankingMembers";
+import { AppHeader } from "../../../shared/components/AppHeader";
 
 const MEDAL_COLORS: Record<number, string> = {
   1: "#FFD700",
@@ -20,38 +21,6 @@ const PageWrapper = styled.div`
   color: ${({ theme }) => theme.colors.text.primary};
 `;
 
-const TopBar = styled.header`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[3]};
-  padding: 0 ${({ theme }) => theme.spacing[6]};
-  height: 60px;
-  background-color: ${({ theme }) => theme.colors.background.surface};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
-`;
-
-const Logo = styled.span`
-  ${({ theme }) => css(theme.typography.styles.featureHeading)}
-  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
-  font-family: ${({ theme }) => theme.typography.fontFamily.title};
-  color: ${({ theme }) => theme.colors.brand.green};
-  cursor: pointer;
-`;
-
-const BackButton = styled.button`
-  padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[4]};
-  border-radius: ${({ theme }) => theme.radius.comfortable};
-  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
-  background: transparent;
-  color: ${({ theme }) => theme.colors.text.primary};
-  ${({ theme }) => css(theme.typography.styles.caption)}
-  cursor: pointer;
-  transition: border-color 0.15s;
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.brand.green};
-  }
-`;
 
 const ContentWrapper = styled.div`
   max-width: 720px;
@@ -146,10 +115,7 @@ export default function RankingPage() {
 
   return (
     <PageWrapper>
-      <TopBar>
-        <BackButton onClick={() => navigate(-1)}>← 뒤로</BackButton>
-        <Logo onClick={() => navigate("/")}>ER STATS</Logo>
-      </TopBar>
+      <AppHeader />
 
       <ContentWrapper>
         <PageHeader>

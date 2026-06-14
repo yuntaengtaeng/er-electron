@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled, { css } from "styled-components";
-import { Button, Text } from "@repo/ui";
+import { Text } from "@repo/ui";
 import {
   CURRENT_SEASON_ID,
   getMemberByNickname,
@@ -13,6 +13,7 @@ import { ProfileStats } from "./ProfileStats";
 import { TopCharacters } from "./TopCharacters";
 import { MatchHistory } from "./MatchHistory";
 import { Loading } from "../../../shared/components/Loading";
+import { AppHeader } from "../../../shared/components/AppHeader";
 
 export type RegistrationState =
   | "idle"
@@ -25,25 +26,6 @@ const PageWrapper = styled.div`
   min-height: 100vh;
   background-color: ${({ theme }) => theme.colors.background.base};
   color: ${({ theme }) => theme.colors.text.primary};
-`;
-
-const TopBar = styled.header`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.spacing[3]};
-  padding: 0 ${({ theme }) => theme.spacing[6]};
-  height: 60px;
-  background-color: ${({ theme }) => theme.colors.background.surface};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
-`;
-
-const Logo = styled.span`
-  ${({ theme }) => css(theme.typography.styles.featureHeading)}
-  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
-  font-family: ${({ theme }) => theme.typography.fontFamily.title};
-  color: ${({ theme }) => theme.colors.brand.green};
-  cursor: pointer;
-  margin-right: ${({ theme }) => theme.spacing[1]};
 `;
 
 const SearchRow = styled.div`
@@ -233,20 +215,18 @@ export default function PlayerPage() {
 
   return (
     <PageWrapper>
-      <TopBar>
-        <Button variant="outlined" onClick={() => navigate(-1)}>
-          ← 뒤로
-        </Button>
-        <Logo onClick={() => navigate("/")}>ER STATS</Logo>
-        <SearchRow>
-          <SearchInput
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && doSearch()}
-          />
-          <SearchButton onClick={doSearch}>검색</SearchButton>
-        </SearchRow>
-      </TopBar>
+      <AppHeader
+        right={
+          <SearchRow>
+            <SearchInput
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && doSearch()}
+            />
+            <SearchButton onClick={doSearch}>검색</SearchButton>
+          </SearchRow>
+        }
+      />
 
       <ContentWrapper>
         {loading && <Loading />}
