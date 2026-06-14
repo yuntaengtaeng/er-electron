@@ -3,6 +3,7 @@ import { HomePage } from "../features/home";
 import { PlayerPage } from "../features/player";
 import { UIGuidePage } from "../features/ui-guide";
 import { RankingPage } from "../features/ranking";
+import { ComparePage } from "../features/compare";
 
 export function Router() {
   return (
@@ -10,6 +11,7 @@ export function Router() {
       <Route path="/" element={<HomePage />} />
       <Route path="/player/:nickname" element={<PlayerPage />} />
       <Route path="/ranking" element={<RankingPage />} />
+      <Route path="/compare" element={<ComparePage />} />
       <Route path="/ui-guide" element={<UIGuidePage />} />
     </Routes>
   );

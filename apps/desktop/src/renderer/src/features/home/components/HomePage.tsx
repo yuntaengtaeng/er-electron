@@ -88,6 +88,33 @@ const SearchButton = styled.button`
   }
 `;
 
+const FeatureGrid = styled.div`
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 ${({ theme }) => theme.spacing[8]} ${({ theme }) => theme.spacing[10]};
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: ${({ theme }) => theme.spacing[4]};
+`;
+
+const FeatureCard = styled.div`
+  background-color: ${({ theme }) => theme.colors.background.card};
+  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.comfortable};
+  padding: ${({ theme }) => theme.spacing[5]};
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.brand.greenBorder};
+    background-color: ${({ theme }) => theme.colors.background.elevated};
+  }
+`;
+
+const FeatureCardTitle = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacing[1]};
+`;
+
 const RankSection = styled.div`
   max-width: 1000px;
   margin: 0 auto;
@@ -130,6 +157,17 @@ export default function HomePage() {
           <SearchButton onClick={doSearch}>검색</SearchButton>
         </SearchRow>
       </HeroSection>
+
+      <FeatureGrid>
+        <FeatureCard onClick={() => navigate("/compare")}>
+          <FeatureCardTitle>
+            <Text variant="bodyBold">비교하기</Text>
+          </FeatureCardTitle>
+          <Text variant="caption" color="secondary">
+            최근 랭크 전적으로 플레이어 간 능력치 비교
+          </Text>
+        </FeatureCard>
+      </FeatureGrid>
 
       {clubMembers.length > 0 && (
         <RankSection>
