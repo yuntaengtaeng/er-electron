@@ -13,6 +13,7 @@ const characterByKey = new Map(
 );
 const itemById = new Map(itemsData.items.map((i) => [i.id, i]));
 const masteryByKey = new Map(masteriesData.masteries.map((m) => [m.key, m]));
+const masteryById = new Map(masteriesData.masteries.map((m) => [m.id, m]));
 const areaByKey = new Map(areasData.areas.map((a) => [a.key, a]));
 const tierById = new Map(tiersData.tiers.map((t) => [t.id, t]));
 const monsterByKey = new Map(monstersData.monsters.map((m) => [m.key, m]));
@@ -28,6 +29,7 @@ export const getCharacterByKey = (key: string) =>
   characterByKey.get(key) ?? null;
 export const getItemById = (id: number) => itemById.get(id) ?? null;
 export const getMasteryByKey = (key: string) => masteryByKey.get(key) ?? null;
+export const getMasteryById = (id: number) => masteryById.get(id) ?? null;
 export const getAreaByKey = (key: string) => areaByKey.get(key) ?? null;
 export const getTierById = (id: number) => tierById.get(id) ?? null;
 
@@ -70,3 +72,30 @@ const cdnVersion = cdnVersionMatch?.[1] ?? "11.4.0";
 export function getMasteryIconUrl(weaponTypeKey: string): string {
   return `https://cdn.dak.gg/assets/er/game-assets/${cdnVersion}/Ico_Ability_${weaponTypeKey}.png`;
 }
+
+// 키오스크 에픽 재료 가격 (크레딧)
+export const MATERIAL_PRICES: Record<number, number> = {
+  401208: 200, // 생명의 나무
+  401209: 200, // 운석
+  401301: 200, // 문스톤 (레거시)
+  401304: 250, // 미스릴
+  401401: 500, // VF 혈액 샘플
+  401402: 200, // 진화의 돌 (레거시)
+  401403: 350, // 포스 코어
+};
+
+export const getWeaponTypeFromEquipment = (equipment: Record<string, number>): string => {
+  const weaponId = equipment["0"];
+  if (!weaponId || weaponId <= 0) return "Unknown";
+  const item = getItemById(weaponId);
+  return (item as { weaponType?: string } | null)?.weaponType ?? "Unknown";
+};
+
+export const calcItemCredits = (equipment: Record<string, number>): number =>
+  Object.values(equipment)
+    .filter((id) => id > 0)
+    .reduce((sum, id) => {
+      const item = getItemById(id);
+      const mat2 = (item as { makeMaterial2?: number } | null)?.makeMaterial2;
+      return sum + (mat2 !== undefined ? (MATERIAL_PRICES[mat2] ?? 0) : 0);
+    }, 0);

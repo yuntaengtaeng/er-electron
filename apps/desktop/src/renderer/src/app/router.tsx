@@ -4,6 +4,7 @@ import { PlayerPage } from "../features/player";
 import { UIGuidePage } from "../features/ui-guide";
 import { RankingPage } from "../features/ranking";
 import { ComparePage } from "../features/compare";
+import { ItemAnalysisPage } from "../features/item-analysis";
 
 export function Router() {
   return (
@@ -12,6 +13,7 @@ export function Router() {
       <Route path="/player/:nickname" element={<PlayerPage />} />
       <Route path="/ranking" element={<RankingPage />} />
       <Route path="/compare" element={<ComparePage />} />
+      <Route path="/item-analysis" element={<ItemAnalysisPage />} />
       <Route path="/ui-guide" element={<UIGuidePage />} />
     </Routes>
   );

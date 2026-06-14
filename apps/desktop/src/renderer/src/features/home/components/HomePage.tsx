@@ -167,6 +167,14 @@ export default function HomePage() {
             최근 랭크 전적으로 플레이어 간 능력치 비교
           </Text>
         </FeatureCard>
+        <FeatureCard onClick={() => navigate("/item-analysis")}>
+          <FeatureCardTitle>
+            <Text variant="bodyBold">아이템 분석</Text>
+          </FeatureCardTitle>
+          <Text variant="caption" color="secondary">
+            실험체별 선호 장비와 딜 효율 분석
+          </Text>
+        </FeatureCard>
       </FeatureGrid>
 
       {clubMembers.length > 0 && (
