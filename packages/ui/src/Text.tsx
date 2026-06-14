@@ -1,7 +1,7 @@
 import React from "react";
 import styled, { css } from "styled-components";
 
-type TextVariant = "h1" | "h2" | "h3" | "body" | "caption" | "small";
+type TextVariant = "h1" | "h2" | "h3" | "body" | "bodyBold" | "caption" | "captionBold" | "small";
 type TextColor = "primary" | "secondary" | "tertiary" | "brand";
 
 interface TextProps {
@@ -36,9 +36,21 @@ const variantStyles: Record<TextVariant, ReturnType<typeof css>> = {
     font-family: ${({ theme }) => theme.typography.fontFamily.ui};
     line-height: ${({ theme }) => theme.typography.lineHeight.relaxed};
   `,
+  bodyBold: css`
+    font-size: ${({ theme }) => theme.typography.fontSize.body};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+    font-family: ${({ theme }) => theme.typography.fontFamily.ui};
+    line-height: ${({ theme }) => theme.typography.lineHeight.normal};
+  `,
   caption: css`
     font-size: ${({ theme }) => theme.typography.fontSize.caption};
     font-weight: ${({ theme }) => theme.typography.fontWeight.regular};
+    font-family: ${({ theme }) => theme.typography.fontFamily.ui};
+    line-height: ${({ theme }) => theme.typography.lineHeight.relaxed};
+  `,
+  captionBold: css`
+    font-size: ${({ theme }) => theme.typography.fontSize.caption};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
     font-family: ${({ theme }) => theme.typography.fontFamily.ui};
     line-height: ${({ theme }) => theme.typography.lineHeight.relaxed};
   `,
@@ -76,7 +88,9 @@ const defaultTagMap: Record<TextVariant, React.ElementType> = {
   h2: "h2",
   h3: "h3",
   body: "p",
+  bodyBold: "p",
   caption: "span",
+  captionBold: "span",
   small: "span",
 };
 
