@@ -76,6 +76,33 @@ ALTER TABLE club_members DISABLE ROW LEVEL SECURITY;
 
 ---
 
+### `compare_history`
+
+비교하기 기능에서 검색된 닉네임을 누적 저장. 인기 비교 추천에 사용.
+
+```sql
+CREATE TABLE compare_history (
+  nickname          TEXT PRIMARY KEY,
+  search_count      INTEGER NOT NULL DEFAULT 1,
+  last_searched_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE compare_history DISABLE ROW LEVEL SECURITY;
+```
+
+**컬럼 설명**
+
+| 컬럼 | 타입 | 설명 |
+|---|---|---|
+| `nickname` | TEXT | 비교 대상으로 검색된 닉네임 (본인 제외, 비교 1·2만 기록) |
+| `search_count` | INTEGER | 총 검색 횟수 — 인기순 정렬 기준 |
+| `last_searched_at` | TIMESTAMPTZ | 마지막 검색 시각 |
+
+> RLS: `club_members`와 동일하게 비활성화.
+> 테이블 미생성 시 인기 추천 기능만 조용히 비활성화되며, 비교 기능 자체는 정상 동작.
+
+---
+
 ## 앱 연동 흐름
 
 ```

@@ -8,3 +8,15 @@ out
 .env.*
 .env.local
 .env.*.local
+
+# electron-vite build artifacts
+apps/desktop/electron.vite.config.d.ts
+apps/desktop/electron.vite.config.js
+apps/desktop/src/main/*.d.ts
+apps/desktop/src/main/*.js
+apps/desktop/src/preload/*.d.ts
+apps/desktop/src/preload/*.js
+
+# misc
+plan.md
+*.tsbuildinfo

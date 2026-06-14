@@ -84,10 +84,17 @@ apps/desktop/src/renderer/src/
 │   │   │                # WinRateSection, StatsGrid, TopCharacters, MatchHistory
 │   │   ├── hooks/       # usePlayerData (데이터 fetch + 파생값 계산)
 │   │   └── index.ts
+│   ├── compare/
+│   │   ├── components/  # ComparePage, PentagonChart, MmrBarChart
+│   │   ├── hooks/       # useCompareData
+│   │   └── index.ts
 │   └── ui-guide/
 │       ├── components/  # UIGuidePage
 │       └── index.ts
 └── shared/
+    ├── components/
+    │   ├── AppHeader.tsx  # 공용 헤더 (뒤로가기 + 로고 + 우측 슬롯)
+    │   └── Loading.tsx
     ├── utils/
     │   ├── format.ts    # formatDuration, timeAgo
     │   └── meta.ts      # 코드 → 한글명 조회 유틸
@@ -113,6 +120,19 @@ apps/desktop/src/renderer/src/
 - `utils/` — 순수 유틸리티 함수
 - `types/` — 피처 전용 타입 (필요시)
 - `index.ts` — 각 feature의 public API만 export (외부에서 내부 파일 직접 import 금지)
+
+### 공용 헤더 (AppHeader)
+- **새로운 서브 페이지를 만들 때 반드시 `AppHeader` 사용** — 직접 TopBar/NavBar styled component 작성 금지
+- `shared/components/AppHeader.tsx`에 위치 — `useNavigate`를 내부에서 호출하므로 `@repo/ui`가 아닌 renderer `shared/`에 위치
+- `right` prop으로 우측 슬롯을 채울 수 있음 (없으면 로고가 자동으로 중앙 정렬)
+
+```tsx
+// 기본 (뒤로가기 + 로고 중앙)
+<AppHeader />
+
+// 우측 슬롯 있는 경우 (PlayerPage의 검색창 등)
+<AppHeader right={<SearchRow>...</SearchRow>} />
+```
 
 ### 정적 메타데이터 (shared/constants/ko-json)
 - API 응답의 숫자 코드를 한글명/이미지로 변환하는 정적 JSON 파일 모음
@@ -158,6 +178,30 @@ getAreaByKey(key)      // e.g. "Harbor" → { name: "항구" }
 - `theme.colors`, `theme.spacing`, `theme.typography`, `theme.radius` 등 `@repo/design-system`의 토큰만 사용
 - 하드코딩된 색상(`#ffffff`, `rgba(...)`)·간격(`12px`)·폰트 크기는 **절대 사용 금지**
 - 토큰에 없는 값이 필요하면 먼저 design-system에 토큰을 추가한 뒤 참조
+
+### spacing 토큰 사용 주의
+`theme.spacing`은 순차 인덱스가 아닌 특정 키만 존재함. 없는 키를 쓰면 TypeScript 오류 발생.
+
+**유효한 키 목록** (`packages/design-system/src/spacing.ts`):
+```
+px(1px)  0.5(2px)  1(4px)  1.5(6px)  2(8px)  2.5(10px)  3(12px)  3.5(14px)
+4(16px)  5(20px)   6(24px)            8(32px)             10(40px)
+12(48px) 16(64px)  20(80px) 24(96px)
+```
+**없는 키**: 7, 9, 11, 13, 14, 15, 17, 18, 19 등 — `spacing[7]`, `spacing[9]` 등은 타입 오류
+
+### styled-components 다중 인터폴레이션 padding 주의
+padding 단축속성에 인터폴레이션을 4개 여러 줄로 쓰면 파서 오류 발생.
+
+```ts
+// 금지: 4값 단축속성 + 여러 줄 인터폴레이션
+padding: ${spacing[3]} ${spacing[9]}
+  ${spacing[3]} ${spacing[4]};  // ❌
+
+// 권장: padding 2값으로 선언 후 필요한 방향만 override
+padding: ${spacing[3]} ${spacing[4]};
+padding-right: ${spacing[8]};  // ✅
+```
 
 ### Custom Color 사용 규칙
 - 토큰에 없는 색상이 반드시 필요한 경우, 코드에 바로 쓰지 말고 먼저 아래를 결정해야 함:
