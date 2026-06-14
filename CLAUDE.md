@@ -61,6 +61,22 @@ export function initErService(apiKey: string) {
 - **새로운 외부 API 추가 시 `csp.ts`의 `CONNECT_SRC` 배열에만 추가하면 됨**
 - 개발 환경(`ELECTRON_RENDERER_URL` 존재)에서는 `unsafe-inline`, `unsafe-eval`, `ws://localhost:*` 자동 허용
 
+### service가 items.json을 쓸 수 없을 때 — 콜백 주입 패턴
+`@repo/service`는 renderer의 `shared/constants/ko-json/`을 import할 수 없음 (레이어 역방향). items.json 기반 계산이 필요한 경우 콜백으로 주입받는다.
+
+```ts
+// packages/service/src/item-analysis-service.ts
+export const getItemAnalysis = async (
+  nickname: string,
+  calcCredits: (equipment: Record<string, number>) => number,
+  getWeaponType: (equipment: Record<string, number>) => string
+): Promise<ItemAnalysisResult> => { ... }
+
+// 호출 측 (renderer hook)
+import { calcItemCredits, getWeaponTypeFromEquipment } from "../../../shared/utils/meta";
+const result = await getItemAnalysis(nickname, calcItemCredits, getWeaponTypeFromEquipment);
+```
+
 ### BSER API 응답 구조
 - 엔드포인트마다 응답 키가 다름 (`user`, `userGames`, `userStats` 등)
 - `er-api-client/src/client.ts`의 `get<T>(path, key)` 메서드에서 두 번째 인자로 키를 명시
@@ -87,6 +103,10 @@ apps/desktop/src/renderer/src/
 │   ├── compare/
 │   │   ├── components/  # ComparePage, PentagonChart, MmrBarChart
 │   │   ├── hooks/       # useCompareData
+│   │   └── index.ts
+│   ├── item-analysis/
+│   │   ├── components/  # ItemAnalysisPage, CharacterSection
+│   │   ├── hooks/       # useItemAnalysisData
 │   │   └── index.ts
 │   └── ui-guide/
 │       ├── components/  # UIGuidePage
@@ -142,7 +162,7 @@ apps/desktop/src/renderer/src/
 | 파일 | 내용 | 주요 필드 |
 |---|---|---|
 | `characters.json` | 실험체 목록 | `id`, `key`, `name`, `imageUrl` |
-| `items.json` | 아이템 목록 | `id`, `name`, `imageUrl`, `grade` |
+| `items.json` | 아이템 목록 | `id`, `name`, `imageUrl`, `grade`, `weaponType`(무기만), `makeMaterial2`(Legend/Mythic만) |
 | `masteries.json` | 무기 숙련도 타입 | `id`, `key`, `name` |
 | `areas.json` | 지역 목록 | `id`, `key`, `name` |
 | `tiers.json` | 랭크 티어 | `id`, `key`, `name`, `iconUrl` |
@@ -158,13 +178,20 @@ apps/desktop/src/renderer/src/
 getCharacterById(id)   // characters.json
 getItemById(id)        // items.json
 getTierById(id)        // tiers.json
+getMasteryById(id)     // masteries.json (id는 WeaponType enum 값과 동일)
 
 // key 기반 (API가 문자열로 직접 반환: killerCharacter, killerWeapon, placeOfDeath 등)
 getCharacterByKey(key) // e.g. "Jackie" → { name: "재키", imageUrl: "..." }
 getMasteryByKey(key)   // e.g. "Glove" → { name: "글러브" }
 getAreaByKey(key)      // e.g. "Harbor" → { name: "항구" }
+
+// 아이템 분석 전용 유틸
+getWeaponTypeFromEquipment(equipment) // equipment["0"] → items.json weaponType 영어 key 반환
+calcItemCredits(equipment)            // equipment → Legend/Mythic 아이템의 Epic 재료 키오스크 가격 합산
+MATERIAL_PRICES                       // Epic 재료 ID → 키오스크 가격 (생명의나무 200, 미스릴 250 등)
 ```
 
+- **`masteryLevel` API 필드 주의**: `UserGame.masteryLevel` 키는 영어 key("Bat")가 아닌 숫자 코드 혼재 — 무기 종류 판별에 사용 금지. 대신 `equipment["0"]`(무기 슬롯) → `getWeaponTypeFromEquipment` 사용
 - CSP `img-src`에 `https://cdn.dak.gg` 허용 추가됨 (csp.ts)
 
 #### 역할 분리 원칙
