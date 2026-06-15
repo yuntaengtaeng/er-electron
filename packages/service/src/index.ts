@@ -5,3 +5,5 @@ export { getCompareStats } from "./compare-service";
 export type { ComparePlayerStats } from "./compare-service";
 export { getItemAnalysis } from "./item-analysis-service";
 export type { ItemAnalysisResult, CharacterItemAnalysis, WeaponTypeAnalysis, SlotItemStat } from "./item-analysis-service";
+export { getVisionSource } from "./vision-source-service";
+export type { VisionSourceResult, GameDetail } from "./vision-source-service";
