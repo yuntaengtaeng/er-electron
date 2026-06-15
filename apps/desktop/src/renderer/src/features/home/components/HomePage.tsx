@@ -175,6 +175,14 @@ export default function HomePage() {
             실험체별 선호 장비와 딜 효율 분석
           </Text>
         </FeatureCard>
+        <FeatureCard onClick={() => navigate("/vision-source")}>
+          <FeatureCardTitle>
+            <Text variant="bodyBold">시야 점수 분석</Text>
+          </FeatureCardTitle>
+          <Text variant="caption" color="secondary">
+            망원 카메라·드론 사용 출처 분석
+          </Text>
+        </FeatureCard>
       </FeatureGrid>
 
       {clubMembers.length > 0 && (

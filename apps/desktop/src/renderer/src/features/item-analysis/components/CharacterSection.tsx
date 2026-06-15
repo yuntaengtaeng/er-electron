@@ -170,7 +170,9 @@ const StatValue = styled.span`
 
 const WeaponTypeSection = ({ data }: { data: WeaponTypeAnalysis }) => {
   const mastery = getMasteryByKey(data.weaponType);
-  const iconUrl = mastery?.iconUrl ? normalizeImageUrl(mastery.iconUrl) : undefined;
+  const iconUrl = mastery?.iconUrl
+    ? normalizeImageUrl(mastery.iconUrl)
+    : undefined;
 
   return (
     <WeaponSection>
@@ -193,7 +195,9 @@ const WeaponTypeSection = ({ data }: { data: WeaponTypeAnalysis }) => {
               ) : (
                 items.map(({ itemId, count }) => {
                   const item = getItemById(itemId);
-                  const imgUrl = item?.imageUrl ? normalizeImageUrl(item.imageUrl) : null;
+                  const imgUrl = item?.imageUrl
+                    ? normalizeImageUrl(item.imageUrl)
+                    : null;
                   const pct = Math.round((count / data.gamesAnalyzed) * 100);
                   return (
                     <ItemRow key={itemId}>
@@ -218,7 +222,9 @@ const WeaponTypeSection = ({ data }: { data: WeaponTypeAnalysis }) => {
       <StatsRow>
         <StatItem>
           <StatLabel>평균 아이템 크레딧</StatLabel>
-          <StatValue>{Math.round(data.avgItemCredits).toLocaleString()}</StatValue>
+          <StatValue>
+            {Math.round(data.avgItemCredits).toLocaleString()}
+          </StatValue>
         </StatItem>
         <StatItem>
           <StatLabel>평균 딜량</StatLabel>

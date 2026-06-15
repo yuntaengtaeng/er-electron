@@ -5,6 +5,7 @@ import { UIGuidePage } from "../features/ui-guide";
 import { RankingPage } from "../features/ranking";
 import { ComparePage } from "../features/compare";
 import { ItemAnalysisPage } from "../features/item-analysis";
+import { VisionSourcePage } from "../features/vision-source";
 
 export function Router() {
   return (
@@ -14,6 +15,7 @@ export function Router() {
       <Route path="/ranking" element={<RankingPage />} />
       <Route path="/compare" element={<ComparePage />} />
       <Route path="/item-analysis" element={<ItemAnalysisPage />} />
+      <Route path="/vision-source" element={<VisionSourcePage />} />
       <Route path="/ui-guide" element={<UIGuidePage />} />
     </Routes>
   );
