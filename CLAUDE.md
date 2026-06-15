@@ -83,6 +83,24 @@ const result = await getItemAnalysis(nickname, calcItemCredits, getWeaponTypeFro
 - `/v1/user/nickname` 응답: `{ user: { userId, nickname } }` — `userNum` 없음
 - userId(문자열)로 게임/스탯 조회: `getUserGamesByUserId`, `getUserStatsByUserId`
 
+#### UserGame 주요 필드 (시야/아이템 관련)
+- `killMonsters: Record<string, number>` — 몬스터 킬 수. **키가 문자열**("2", "13" 등). 하드코딩 금지, 상수로 관리
+  ```ts
+  const MONSTER_IDS = { BAT: "2", MUTANT_BAT: "13" } as const
+  g.killMonsters[MONSTER_IDS.BAT] ?? 0
+  ```
+- `itemTransferredDrone: number[]` / `itemTransferredConsole: number[]` — **원격 배달**로 받은 아이템 ID 배열. 키오스크 직접 구매는 포함되지 않음
+- `useReconDrone: number` / `useEmpDrone: number` — 드론 **사용**(활성화) 횟수. 구매 개수와 다름
+- `addTelephotoCamera: number` — 망원 카메라 설치 총 수 (박쥐 처치 + 구매 합산)
+- `addSurveillanceCamera: number` — 감시 카메라 설치 총 수
+
+#### 시야 분석 관련 아이템 ID 상수 (`vision-source-service.ts`)
+```ts
+const TELEPHOTO_CAMERA_ID = 502207  // 망원 카메라
+const RECON_DRONE_ID      = 502208  // 정찰 드론
+const EMP_DRONE_ID        = 502308  // EMP 드론
+```
+
 ## Renderer 아키텍처 (Feature-based + Clean Architecture)
 
 ```
@@ -101,12 +119,18 @@ apps/desktop/src/renderer/src/
 │   │   ├── hooks/       # usePlayerData (데이터 fetch + 파생값 계산)
 │   │   └── index.ts
 │   ├── compare/
-│   │   ├── components/  # ComparePage, PentagonChart, MmrBarChart
+│   │   ├── components/  # ComparePage, PentagonChart, StatsBarChart, MmrBarChart
 │   │   ├── hooks/       # useCompareData
 │   │   └── index.ts
 │   ├── item-analysis/
 │   │   ├── components/  # ItemAnalysisPage, CharacterSection
 │   │   ├── hooks/       # useItemAnalysisData
+│   │   └── index.ts
+│   ├── vision-source/
+│   │   ├── components/  # VisionSourcePage, VisionBreakdownSection, VisionTrendSection,
+│   │   │                # VisionStatsSection, VisionCameraSourceSection,
+│   │   │                # VisionInsightSection, GameDetailSection
+│   │   ├── hooks/       # useVisionSourceData
 │   │   └── index.ts
 │   └── ui-guide/
 │       ├── components/  # UIGuidePage
