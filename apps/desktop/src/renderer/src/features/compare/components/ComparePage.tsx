@@ -3,6 +3,7 @@ import styled, { css } from "styled-components";
 import { Text } from "@repo/ui";
 import { useCompareData } from "../hooks/useCompareData";
 import { PentagonChart } from "./PentagonChart";
+import { StatsBarChart } from "./StatsBarChart";
 import { MmrBarChart } from "./MmrBarChart";
 import { AppHeader } from "../../../shared/components/AppHeader";
 import type { ComparePlayerStats } from "@repo/service";
@@ -183,7 +184,33 @@ const ResultCard = styled.div`
 `;
 
 const ResultCardTitle = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: ${({ theme }) => theme.spacing[5]};
+`;
+
+const ModeToggle = styled.div`
+  display: flex;
+  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.subtle};
+  overflow: hidden;
+`;
+
+const ModeButton = styled.button<{ $active: boolean }>`
+  padding: ${({ theme }) => theme.spacing[1]} ${({ theme }) => theme.spacing[3]};
+  border: none;
+  background-color: ${({ theme, $active }) =>
+    $active ? theme.colors.background.elevated : "transparent"};
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.text.primary : theme.colors.text.secondary};
+  ${({ theme }) => css(theme.typography.styles.caption)}
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+
+  &:hover:not([data-active="true"]) {
+    color: ${({ theme }) => theme.colors.text.primary};
+  }
 `;
 
 const ChartRow = styled.div`
@@ -276,6 +303,7 @@ const STAT_ROWS: StatsRowData[] = [
 export default function ComparePage() {
   const [selfNickname, setSelfNickname] = useState("");
   const [opponents, setOpponents] = useState<string[]>([]);
+  const [chartMode, setChartMode] = useState<"hexagon" | "bar">("hexagon");
   const { results, compare, popularNicknames } = useCompareData();
 
   const addOpponent = () => setOpponents((prev) => [...prev, ""]);
@@ -408,49 +436,67 @@ export default function ComparePage() {
               <ResultCard>
                 <ResultCardTitle>
                   <Text variant="h3">능력치 비교</Text>
+                  <ModeToggle>
+                    <ModeButton
+                      $active={chartMode === "hexagon"}
+                      onClick={() => setChartMode("hexagon")}
+                    >
+                      육각형
+                    </ModeButton>
+                    <ModeButton
+                      $active={chartMode === "bar"}
+                      onClick={() => setChartMode("bar")}
+                    >
+                      막대
+                    </ModeButton>
+                  </ModeToggle>
                 </ResultCardTitle>
-                <Legend>
-                  {chartPlayers.map((p) => (
-                    <LegendItem key={p.nickname}>
-                      <LegendDot $color={PLAYER_COLORS[p.colorIndex]} />
-                      <LegendName>
-                        {p.nickname} ({p.stats.gamesAnalyzed}판)
-                      </LegendName>
-                    </LegendItem>
-                  ))}
-                  <LegendItem>
-                    <LegendDot $color="#7c7c7c" />
-                    <LegendName>평균 (기준선)</LegendName>
-                  </LegendItem>
-                </Legend>
-                <ChartRow>
-                  <ChartWrapper>
-                    <PentagonChart players={chartPlayers} />
-                  </ChartWrapper>
-                  <StatsTable>
-                    <StatRow>
-                      <StatLabel />
+
+                {chartMode === "hexagon" ? (
+                  <>
+                    <Legend>
                       {chartPlayers.map((p) => (
-                        <StatValue key={p.nickname} $colorIndex={p.colorIndex}>
-                          {p.nickname}
-                        </StatValue>
+                        <LegendItem key={p.nickname}>
+                          <LegendDot $color={PLAYER_COLORS[p.colorIndex]} />
+                          <LegendName>
+                            {p.nickname} ({p.stats.gamesAnalyzed}판)
+                          </LegendName>
+                        </LegendItem>
                       ))}
-                    </StatRow>
-                    {STAT_ROWS.map(({ label, getValue }) => (
-                      <StatRow key={label}>
-                        <StatLabel>{label}</StatLabel>
-                        {chartPlayers.map((p) => (
-                          <StatValue
-                            key={p.nickname}
-                            $colorIndex={p.colorIndex}
-                          >
-                            {getValue(p.stats)}
-                          </StatValue>
+                      <LegendItem>
+                        <LegendDot $color="#7c7c7c" />
+                        <LegendName>평균 (기준선)</LegendName>
+                      </LegendItem>
+                    </Legend>
+                    <ChartRow>
+                      <ChartWrapper>
+                        <PentagonChart players={chartPlayers} />
+                      </ChartWrapper>
+                      <StatsTable>
+                        <StatRow>
+                          <StatLabel />
+                          {chartPlayers.map((p) => (
+                            <StatValue key={p.nickname} $colorIndex={p.colorIndex}>
+                              {p.nickname}
+                            </StatValue>
+                          ))}
+                        </StatRow>
+                        {STAT_ROWS.map(({ label, getValue }) => (
+                          <StatRow key={label}>
+                            <StatLabel>{label}</StatLabel>
+                            {chartPlayers.map((p) => (
+                              <StatValue key={p.nickname} $colorIndex={p.colorIndex}>
+                                {getValue(p.stats)}
+                              </StatValue>
+                            ))}
+                          </StatRow>
                         ))}
-                      </StatRow>
-                    ))}
-                  </StatsTable>
-                </ChartRow>
+                      </StatsTable>
+                    </ChartRow>
+                  </>
+                ) : (
+                  <StatsBarChart players={chartPlayers} />
+                )}
               </ResultCard>
             )}
 
