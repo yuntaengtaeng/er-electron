@@ -19,6 +19,29 @@ SUPABASE_SERVICE_KEY=<service_role 키>
 
 ---
 
+## 스키마 변경 절차
+
+크롤러 스키마가 바뀌면 **GitHub Actions 배포 전에** Supabase SQL Editor에서 마이그레이션을 먼저 실행해야 한다.
+
+1. `supabase.md` 해당 테이블의 `DROP TABLE` + `CREATE TABLE` SQL을 **전체 컬럼 포함**하여 실행
+2. `apps/crawler/src/collect.ts`의 `onConflict` 값과 DB PK/UNIQUE가 일치하는지 확인
+
+| 테이블 | 크롤러 `onConflict` | DB 제약 |
+|---|---|---|
+| `rankers` | `nickname` | `nickname` PRIMARY KEY |
+| `games` | `game_id,user_id` | `PRIMARY KEY (game_id, user_id)` |
+| `kill_matchups` | `game_id,killer_char_num,killed_char_num` | 복합 PRIMARY KEY |
+
+코드만 배포하고 DB를 갱신하지 않으면 아래 오류가 발생한다.
+
+```
+there is no unique or exclusion constraint matching the ON CONFLICT specification
+```
+
+> `DROP TABLE` 마이그레이션은 해당 테이블 데이터를 초기화한다. 크롤러 재실행으로 `rankers`/`games`/`kill_matchups`는 다시 채워진다.
+
+---
+
 ## 테이블 목록
 
 ### `club_members`
@@ -27,8 +50,7 @@ SUPABASE_SERVICE_KEY=<service_role 키>
 
 ```sql
 CREATE TABLE club_members (
-  user_num                     INTEGER PRIMARY KEY,    -- BSER API userNum (고정 정수 식별자)
-  nickname                     TEXT NOT NULL,          -- 게임 닉네임
+  nickname                     TEXT PRIMARY KEY,          -- 게임 닉네임 (upsert 키)
   mmr                          INTEGER NOT NULL DEFAULT 0,  -- 솔로 랭크 RP
   rank                         INTEGER,                -- 솔로 랭크 순위 (#N위)
   rank_percent                 REAL,                   -- 상위 N% (0 이면 미집계)
@@ -36,26 +58,11 @@ CREATE TABLE club_members (
   updated_at                   TIMESTAMPTZ DEFAULT NOW(),
   representative_character_code INTEGER               -- 등록/갱신 시점 최다 플레이 실험체 코드
 );
-```
-
-**마이그레이션 (user_id → user_num 전환)**
-```sql
--- 기존 테이블 삭제 후 재생성 (데이터 초기화 필요)
-DROP TABLE club_members;
-
-CREATE TABLE club_members (
-  user_num                     INTEGER PRIMARY KEY,
-  nickname                     TEXT NOT NULL,
-  mmr                          INTEGER NOT NULL DEFAULT 0,
-  rank                         INTEGER,
-  rank_percent                 REAL,
-  season_id                    INTEGER NOT NULL,
-  updated_at                   TIMESTAMPTZ DEFAULT NOW(),
-  representative_character_code INTEGER
-);
 
 ALTER TABLE club_members DISABLE ROW LEVEL SECURITY;
 ```
+
+> `upsertMember`는 `nickname`을 PK로 upsert한다. `userNum`/`userId`는 저장하지 않는다.
 
 **인덱스 (선택)**
 ```sql
@@ -75,8 +82,7 @@ ALTER TABLE club_members DISABLE ROW LEVEL SECURITY;
 
 | 컬럼 | 타입 | 설명 |
 |---|---|---|
-| `user_id` | TEXT | BSER API의 userId (닉네임 → userId 변환 후 저장) |
-| `nickname` | TEXT | 표시용 닉네임 (닉네임 변경 시 갱신하기로 업데이트됨) |
+| `nickname` | TEXT | 게임 닉네임 — PRIMARY KEY, `upsertMember`/`getMemberByNickname` 조회 키 |
 | `mmr` | INTEGER | 솔로 랭크 RP 점수 — 홈 랭킹 정렬 기준 |
 | `rank` | INTEGER | 전체 솔로 랭크 순위 |
 | `rank_percent` | REAL | 상위 몇 % (예: 5.23) |
@@ -228,18 +234,9 @@ ALTER TABLE games DISABLE ROW LEVEL SECURITY;
 
 CREATE INDEX IF NOT EXISTS idx_games_character ON games(character_num);
 CREATE INDEX IF NOT EXISTS idx_games_version   ON games(version_major);
-```
 
-**버전 프루닝**: 크롤러 실행 시 `version_major` 기준 최근 2개 패치만 유지. 오래된 버전 삭제 시 `kill_matchups` → `games` 순서로 삭제.
-
----
-
-### `kill_matchups`
-
-게임별 킬 상대 실험체 집계. `games.killDetails` 파싱 결과.
-
-```sql
-CREATE TABLE IF NOT EXISTS kill_matchups (
+-- kill_matchups (games와 함께 재생성 — 위 DROP 구문으로 이미 삭제됨)
+CREATE TABLE kill_matchups (
   game_id          BIGINT NOT NULL,
   killer_char_num  INTEGER NOT NULL,
   killed_char_num  INTEGER NOT NULL,
@@ -251,6 +248,16 @@ ALTER TABLE kill_matchups DISABLE ROW LEVEL SECURITY;
 
 CREATE INDEX IF NOT EXISTS idx_kill_matchups_killer ON kill_matchups(killer_char_num);
 ```
+
+**버전 프루닝**: 크롤러 실행 시 `version_major` 기준 최근 2개 패치만 유지. 오래된 버전 삭제 시 `kill_matchups` → `games` 순서로 삭제.
+
+---
+
+### `kill_matchups`
+
+게임별 킬 상대 실험체 집계. `games.killDetails` 파싱 결과.
+
+> 스키마 변경 시 `games` 마이그레이션 블록에 포함된 SQL을 사용한다 (`DROP TABLE IF EXISTS kill_matchups` 후 재생성).
 
 ---
 

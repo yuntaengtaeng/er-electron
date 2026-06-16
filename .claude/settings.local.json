@@ -4,7 +4,9 @@
       "Bash(npx electron-vite *)",
       "Bash(dir -R)",
       "Bash(Get-ChildItem -Recurse packages/ui/src/*.tsx packages/ui/src/*.ts)",
-      "Bash(Select-Object FullName)"
+      "Bash(Select-Object FullName)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

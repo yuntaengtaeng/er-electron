@@ -128,11 +128,11 @@ const EMP_DRONE_ID        = 502308  // EMP 드론
 ### 테이블 구조
 ```sql
 -- 클럽 멤버 (앱에서 수동 관리)
-club_members (nickname, mmr, rank, rank_percent, season_id, updated_at, representative_character_code)
+club_members  (nickname PK, mmr, rank, rank_percent, season_id, updated_at, representative_character_code)
 
 -- 랭커 데이터 (크롤러가 수집)
-rankers       (user_num PK, nickname, mmr, rank, collected_at)
-games         (game_id + user_num PK, season_id, version_major, character_num, ... 전체 UserGame 필드)
+rankers       (nickname PK, mmr, rank, collected_at)
+games         (game_id + user_id PK, season_id, version_major, character_num, ... 전체 UserGame 필드)
 kill_matchups (game_id + killer_char_num + killed_char_num PK, count)
 
 -- 수집 상태 (단일 row, id=1 고정)
