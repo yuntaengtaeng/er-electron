@@ -14,8 +14,6 @@ export interface WeaponTypeAnalysis {
   slotItems: Record<string, SlotItemStat[]>;
   avgItemCredits: number;
   avgDamage: number;
-  damageEfficiency: number;
-  tankEfficiency: number;
 }
 
 export interface CharacterItemAnalysis {
@@ -61,21 +59,6 @@ const buildWeaponTypeAnalysis = (
     slotItems,
     avgItemCredits: avg(games.map((g) => calcCredits(g.equipment))),
     avgDamage: avg(games.map((g) => g.damageToPlayer)),
-    damageEfficiency: avg(
-      games
-        .map((g) => ({ damage: g.damageToPlayer, credits: calcCredits(g.equipment) }))
-        .filter(({ credits }) => credits > 0)
-        .map(({ damage, credits }) => damage / credits)
-    ),
-    tankEfficiency: avg(
-      games
-        .map((g) => ({
-          tanked: g.damageFromPlayer + g.damageOffsetedByShield_Player,
-          credits: calcCredits(g.equipment),
-        }))
-        .filter(({ credits }) => credits > 0)
-        .map(({ tanked, credits }) => tanked / credits)
-    ),
   };
 };
 

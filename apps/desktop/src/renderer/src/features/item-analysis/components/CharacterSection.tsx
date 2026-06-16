@@ -230,14 +230,6 @@ const WeaponTypeSection = ({ data }: { data: WeaponTypeAnalysis }) => {
           <StatLabel>평균 딜량</StatLabel>
           <StatValue>{Math.round(data.avgDamage).toLocaleString()}</StatValue>
         </StatItem>
-        <StatItem>
-          <StatLabel>딜 효율</StatLabel>
-          <StatValue>{data.damageEfficiency.toFixed(2)}</StatValue>
-        </StatItem>
-        <StatItem>
-          <StatLabel>탱킹 효율</StatLabel>
-          <StatValue>{data.tankEfficiency.toFixed(2)}</StatValue>
-        </StatItem>
       </StatsRow>
     </WeaponSection>
   );

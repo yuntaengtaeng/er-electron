@@ -4,6 +4,7 @@ import styled, { css } from "styled-components";
 import { Button, Text } from "@repo/ui";
 import { useClubMembers } from "../hooks/useClubMembers";
 import { ClubRankingSection } from "./ClubRankingSection";
+import { CrawlStatusBanner } from "../../../shared/components/CrawlStatusBanner";
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -140,12 +141,14 @@ export default function HomePage() {
         </Button>
       </NavBar>
 
+      <CrawlStatusBanner />
+
       <HeroSection>
         <HeroTitle>
           <Text variant="h1">이터널 리턴 전적 검색</Text>
         </HeroTitle>
         <HeroSubtitle>
-          <Text variant="body" color="secondary">실험체의 전적과 통계를 확인하세요</Text>
+          <Text variant="body" color="secondary">전적 조회 및 플레이 분석</Text>
         </HeroSubtitle>
         <SearchRow>
           <SearchInput
@@ -164,7 +167,7 @@ export default function HomePage() {
             <Text variant="bodyBold">비교하기</Text>
           </FeatureCardTitle>
           <Text variant="caption" color="secondary">
-            최근 랭크 전적으로 플레이어 간 능력치 비교
+            두 플레이어 능력치 비교
           </Text>
         </FeatureCard>
         <FeatureCard onClick={() => navigate("/item-analysis")}>
@@ -172,7 +175,7 @@ export default function HomePage() {
             <Text variant="bodyBold">아이템 분석</Text>
           </FeatureCardTitle>
           <Text variant="caption" color="secondary">
-            실험체별 선호 장비와 딜 효율 분석
+            실험체별 장비 및 크레딧 소비 분석
           </Text>
         </FeatureCard>
         <FeatureCard onClick={() => navigate("/vision-source")}>
@@ -180,7 +183,15 @@ export default function HomePage() {
             <Text variant="bodyBold">시야 점수 분석</Text>
           </FeatureCardTitle>
           <Text variant="caption" color="secondary">
-            망원 카메라·드론 사용 출처 분석
+            시야 점수 출처 분석
+          </Text>
+        </FeatureCard>
+        <FeatureCard onClick={() => navigate("/phase-combat")}>
+          <FeatureCardTitle>
+            <Text variant="bodyBold">전투 스타일 분석</Text>
+          </FeatureCardTitle>
+          <Text variant="caption" color="secondary">
+            생존 시간·사망 지역·상대 실험체 분석
           </Text>
         </FeatureCard>
       </FeatureGrid>
