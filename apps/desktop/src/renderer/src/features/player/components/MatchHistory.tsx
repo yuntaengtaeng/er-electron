@@ -14,8 +14,10 @@ import {
   getMasteryByKey,
   getMasteryIconUrl,
   getAreaByKey,
-  getMonsterByKey,
+  getMonsterById,
+  getCreditSourceLabel,
   normalizeImageUrl,
+  currentSeasonDisplayVersion,
 } from "../../../shared/utils/meta";
 
 // ─── constants ────────────────────────────────────────────────────────────────
@@ -55,20 +57,6 @@ const CAUSE_LABEL: Record<string, string> = {
 function getCauseLabel(cause: string): string {
   return CAUSE_LABEL[cause] ?? cause;
 }
-
-const CREDIT_SOURCE_LABEL: Record<string, string> = {
-  Monster: "동물",
-  Kill: "플킬",
-  Box: "상자",
-  Start: "기본",
-  Survive: "생존",
-  Win: "승리",
-  ObjectCapture: "오브젝트",
-  Drone: "드론",
-  InGame: "인게임",
-  PlayerKill: "플킬",
-  MonsterKill: "동물",
-};
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 function getWeaponType(
@@ -391,9 +379,9 @@ const SectionDivider = styled.div`
 `;
 
 const StatGrid = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[5]};
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[3]};
 `;
 
 const StatCell = styled.div`
@@ -401,7 +389,34 @@ const StatCell = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  min-width: 48px;
+`;
+
+const CompactList = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing[1]} ${({ theme }) => theme.spacing[4]};
+`;
+
+const CompactRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[2]};
+  min-width: 0;
+`;
+
+const CompactLabel = styled.span`
+  ${({ theme }) => theme.typography.styles.micro}
+  color: ${({ theme }) => theme.colors.text.secondary};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const CompactValue = styled.span`
+  ${({ theme }) => theme.typography.styles.captionBold}
+  color: ${({ theme }) => theme.colors.text.primary};
+  flex-shrink: 0;
 `;
 
 const StatLabel = styled.span`
@@ -774,10 +789,6 @@ function MatchHistoryItem({ game }: { game: UserGame }) {
                 <StatLabel>2페 킬</StatLabel>
                 <StatValue>{game.killsPhaseTwo}</StatValue>
               </StatCell>
-              <StatCell>
-                <StatLabel>3페 킬</StatLabel>
-                <StatValue>{game.killsPhaseThree}</StatValue>
-              </StatCell>
               {game.totalDoubleKill > 0 && (
                 <StatCell>
                   <StatLabel>더블킬</StatLabel>
@@ -831,7 +842,7 @@ function MatchHistoryItem({ game }: { game: UserGame }) {
               )}
               {game.ccTimeToPlayer > 0 && (
                 <StatCell>
-                  <StatLabel>CC 시간</StatLabel>
+                  <StatLabel>가한 CC</StatLabel>
                   <StatValue>{game.ccTimeToPlayer.toFixed(1)}s</StatValue>
                 </StatCell>
               )}
@@ -840,67 +851,81 @@ function MatchHistoryItem({ game }: { game: UserGame }) {
 
           <SectionDivider />
 
-          {/* ── 파밍 / 제작 ── */}
+          {/* ── 파밍 ── */}
           <SectionRow>
-            <SectionTitle>파밍 / 제작</SectionTitle>
-            <StatGrid>
-              {monsterEntries.length > 0 ? (
-                monsterEntries.map(([key, count]) => {
-                  const monster = getMonsterByKey(key);
+            <SectionTitle>파밍</SectionTitle>
+            {monsterEntries.length > 0 ? (
+              <CompactList>
+                {monsterEntries.map(([key, count]) => {
+                  const monster = getMonsterById(Number(key));
                   return (
-                    <StatCell key={key}>
-                      <StatLabel>{monster?.name ?? key}</StatLabel>
-                      <StatValue>{count}</StatValue>
-                    </StatCell>
+                    <CompactRow key={key}>
+                      <CompactLabel>{monster?.name ?? key}</CompactLabel>
+                      <CompactValue>{count}</CompactValue>
+                    </CompactRow>
                   );
-                })
-              ) : (
+                })}
+              </CompactList>
+            ) : (
+              <StatGrid>
                 <StatCell>
                   <StatLabel>동물 처치</StatLabel>
                   <StatValue>{game.monsterKill}</StatValue>
                 </StatCell>
-              )}
-              {game.craftRare > 0 && (
-                <StatCell>
-                  <StatLabel>희귀 제작</StatLabel>
-                  <StatValue>{game.craftRare}</StatValue>
-                </StatCell>
-              )}
-              {game.craftEpic > 0 && (
-                <StatCell>
-                  <StatLabel>영웅 제작</StatLabel>
-                  <StatValue>{game.craftEpic}</StatValue>
-                </StatCell>
-              )}
-              {game.craftLegend > 0 && (
-                <StatCell>
-                  <StatLabel>전설 제작</StatLabel>
-                  <StatValue>{game.craftLegend}</StatValue>
-                </StatCell>
-              )}
-              {game.craftMythic > 0 && (
-                <StatCell>
-                  <StatLabel>신화 제작</StatLabel>
-                  <StatValue>{game.craftMythic}</StatValue>
-                </StatCell>
-              )}
-            </StatGrid>
+              </StatGrid>
+            )}
           </SectionRow>
+
+          {/* ── 제작 ── */}
+          {(game.craftRare > 0 || game.craftEpic > 0 || game.craftLegend > 0 || game.craftMythic > 0) && (
+            <>
+              <SectionDivider />
+              <SectionRow>
+                <SectionTitle>제작</SectionTitle>
+                <StatGrid>
+                  {game.craftRare > 0 && (
+                    <StatCell>
+                      <StatLabel>희귀</StatLabel>
+                      <StatValue>{game.craftRare}</StatValue>
+                    </StatCell>
+                  )}
+                  {game.craftEpic > 0 && (
+                    <StatCell>
+                      <StatLabel>영웅</StatLabel>
+                      <StatValue>{game.craftEpic}</StatValue>
+                    </StatCell>
+                  )}
+                  {game.craftLegend > 0 && (
+                    <StatCell>
+                      <StatLabel>전설</StatLabel>
+                      <StatValue>{game.craftLegend}</StatValue>
+                    </StatCell>
+                  )}
+                  {game.craftMythic > 0 && (
+                    <StatCell>
+                      <StatLabel>신화</StatLabel>
+                      <StatValue>{game.craftMythic}</StatValue>
+                    </StatCell>
+                  )}
+                </StatGrid>
+              </SectionRow>
+            </>
+          )}
 
           {/* ── 크레딧 수입원 ── */}
           {creditEntries.length > 0 && (
             <>
               <SectionDivider />
               <SectionRow>
-                <SectionTitle>크레딧 수입원</SectionTitle>
-                <StatGrid>
+                <SectionTitle>크레딧 내역</SectionTitle>
+                <CompactList>
                   {creditEntries.map(([key, amount]) => (
-                    <StatCell key={key}>
-                      <StatLabel>{CREDIT_SOURCE_LABEL[key] ?? key}</StatLabel>
-                      <StatValue>{amount.toLocaleString()}</StatValue>
-                    </StatCell>
+                    <CompactRow key={key}>
+                      <CompactLabel>{getCreditSourceLabel(key)}</CompactLabel>
+                      <CompactValue>{amount.toLocaleString()}</CompactValue>
+                    </CompactRow>
                   ))}
-                </StatGrid>
+                </CompactList>
               </SectionRow>
             </>
           )}
@@ -940,7 +965,7 @@ function MatchHistoryItem({ game }: { game: UserGame }) {
             <GameInfoItem>{game.serverName}</GameInfoItem>
             <GameInfoDot>·</GameInfoDot>
             <GameInfoItem>
-              v{game.versionMajor}.{game.versionMinor}
+              v{currentSeasonDisplayVersion}.{game.versionMajor}
             </GameInfoItem>
           </GameInfoRow>
 

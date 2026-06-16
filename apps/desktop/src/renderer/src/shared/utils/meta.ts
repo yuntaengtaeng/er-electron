@@ -6,6 +6,8 @@ import tiersData from "../constants/ko-json/tiers.json";
 import monstersData from "../constants/ko-json/monsters.json";
 import traitSkillGroupsData from "../constants/ko-json/traitSkillGroups.json";
 import tacticalSkillsData from "../constants/ko-json/tacticalSkills.json";
+import creditSourcesData from "../constants/ko-json/credit-sources.json";
+import seasonsData from "../constants/ko-json/seasons.json";
 
 const characterById = new Map(charactersData.characters.map((c) => [c.id, c]));
 const characterByKey = new Map(
@@ -15,8 +17,10 @@ const itemById = new Map(itemsData.items.map((i) => [i.id, i]));
 const masteryByKey = new Map(masteriesData.masteries.map((m) => [m.key, m]));
 const masteryById = new Map(masteriesData.masteries.map((m) => [m.id, m]));
 const areaByKey = new Map(areasData.areas.map((a) => [a.key, a]));
+const areaById = new Map(areasData.areas.map((a) => [a.id, a]));
 const tierById = new Map(tiersData.tiers.map((t) => [t.id, t]));
 const monsterByKey = new Map(monstersData.monsters.map((m) => [m.key, m]));
+const monsterById = new Map(monstersData.monsters.map((m) => [m.id, m]));
 const traitById = new Map(
   traitSkillGroupsData.traitSkills.map((t) => [t.id, t]),
 );
@@ -31,6 +35,7 @@ export const getItemById = (id: number) => itemById.get(id) ?? null;
 export const getMasteryByKey = (key: string) => masteryByKey.get(key) ?? null;
 export const getMasteryById = (id: number) => masteryById.get(id) ?? null;
 export const getAreaByKey = (key: string) => areaByKey.get(key) ?? null;
+export const getAreaById = (id: number) => areaById.get(id) ?? null;
 export const getTierById = (id: number) => tierById.get(id) ?? null;
 
 // MMR → tier 매핑 (내림차순 정렬 — 첫 번째로 minMmr 이하가 되는 항목이 해당 티어)
@@ -55,9 +60,16 @@ export function getTierByMmr(mmr: number) {
   return tierById.get(0) ?? null;
 }
 export const getMonsterByKey = (key: string) => monsterByKey.get(key) ?? null;
+export const getMonsterById = (id: number) => monsterById.get(id) ?? null;
+export const getCreditSourceLabel = (key: string): string =>
+  (creditSourcesData as Record<string, string>)[key] ?? key;
 export const getTraitById = (id: number) => traitById.get(id) ?? null;
 export const getTacticalSkillById = (id: number) =>
   tacticalSkillById.get(id) ?? null;
+
+const currentSeason = seasonsData.seasons.find((s) => (s as { isCurrent?: boolean }).isCurrent);
+const currentSeasonNumber = currentSeason?.name.match(/\d+$/)?.[0] ?? "";
+export const currentSeasonDisplayVersion = currentSeasonNumber;
 
 export function normalizeImageUrl(url: string): string {
   if (url.startsWith("//")) return `https:${url}`;
