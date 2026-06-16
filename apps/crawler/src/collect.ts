@@ -5,8 +5,9 @@ import { writeStatus } from './supabase';
 import { createClient } from './api';
 
 const CURRENT_SEASON_ID = 39;
-const SERVER_CODE = 10;   // Asia server
+const SERVER_CODE = 10;        // Asia server
 const MATCHING_TEAM_MODE = 3;
+const TOP_N = 500;
 const BATCH_SIZE = 100;
 
 export const collect = async (supabase: SupabaseClient, apiKey: string) => {
@@ -16,28 +17,28 @@ export const collect = async (supabase: SupabaseClient, apiKey: string) => {
   await writeStatus(supabase, { status: 'collecting', started_at: startedAt, progress_current: 0, progress_total: 0 });
 
   console.log('[crawler] 랭커 목록 조회 중...');
-  const rankers = await api.getTopRankersByServer(CURRENT_SEASON_ID, MATCHING_TEAM_MODE, SERVER_CODE);
-  console.log(`[crawler] 랭커 ${rankers.length}명`);
+  const allRankers = await api.getTopRankersByServer(CURRENT_SEASON_ID, MATCHING_TEAM_MODE, SERVER_CODE);
+  const rankers = allRankers.slice(0, TOP_N);
+  console.log(`[crawler] 상위 ${rankers.length}명 수집 시작`);
 
   await writeStatus(supabase, { status: 'collecting', started_at: startedAt, progress_current: 0, progress_total: rankers.length });
 
   await pruneOldVersions(supabase);
 
   const rankerRows = rankers.map((r) => ({
-    user_num: r.userNum,
     nickname: r.nickname,
     mmr: r.mmr,
     rank: r.rank,
     collected_at: startedAt,
   }));
-  await upsertBatch(supabase, 'rankers', rankerRows, 'user_num');
+  await upsertBatch(supabase, 'rankers', rankerRows, 'nickname');
 
   const gameBuffer: ReturnType<typeof gameToRow>[] = [];
   const matchupBuffer: ReturnType<typeof parseKillMatchups>[number][] = [];
 
   const flushBuffer = async () => {
     if (gameBuffer.length > 0) {
-      await upsertBatch(supabase, 'games', [...gameBuffer], 'game_id,user_num');
+      await upsertBatch(supabase, 'games', [...gameBuffer], 'game_id,user_id');
       gameBuffer.length = 0;
     }
     if (matchupBuffer.length > 0) {
@@ -57,16 +58,19 @@ export const collect = async (supabase: SupabaseClient, apiKey: string) => {
   for (let i = 0; i < rankers.length; i++) {
     const ranker = rankers[i]!;
 
-    const page1 = await api.getUserGamesByUserNum(ranker.userNum);
+    const userInfo = await api.getUserByNickname(ranker.nickname);
+    const userId = userInfo.userId;
+
+    const page1 = await api.getUserGamesByUserId(userId);
     const collected = soloRank(page1.data);
 
     if (collected.length < 10 && page1.next != null) {
-      const page2 = await api.getUserGamesByUserNum(ranker.userNum, page1.next);
+      const page2 = await api.getUserGamesByUserId(userId, page1.next);
       collected.push(...soloRank(page2.data));
     }
 
     for (const g of collected) {
-      gameBuffer.push(gameToRow(g, ranker.userNum));
+      gameBuffer.push(gameToRow(g, userId));
       matchupBuffer.push(...parseKillMatchups(g));
     }
 
@@ -154,9 +158,9 @@ const parseKillMatchups = (g: UserGame) => {
   }
 };
 
-const gameToRow = (g: UserGame, userNum: number) => ({
+const gameToRow = (g: UserGame, userId: string) => ({
   game_id:                   g.gameId,
-  user_num:                  userNum,
+  user_id:                   userId,
   season_id:                 g.seasonId,
   version_major:             g.versionMajor,
   version_minor:             g.versionMinor,

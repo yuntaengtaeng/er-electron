@@ -16,9 +16,13 @@ export const createClient = (apiKey: string) => {
       await throttle();
       return client.getTopRankersByServer(seasonId, teamMode, serverCode);
     },
-    getUserGamesByUserNum: async (userNum: number, next?: number) => {
+    getUserByNickname: async (nickname: string) => {
       await throttle();
-      return client.getUserGamesByUserNum(userNum, next);
+      return client.getUserByNickname(nickname);
+    },
+    getUserGamesByUserId: async (userId: string, next?: number) => {
+      await throttle();
+      return client.getUserGamesByUserId(userId, next);
     },
   };
 };

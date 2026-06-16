@@ -204,7 +204,7 @@ export default function RankerDataPage() {
                 const tierColor = getTierColor(tier?.key)
                 return (
                   <TableRow
-                    key={ranker.userNum}
+                    key={ranker.nickname}
                     onClick={() => navigate(`/player/${encodeURIComponent(ranker.nickname)}`)}
                   >
                     <RankCell>#{ranker.rank}</RankCell>

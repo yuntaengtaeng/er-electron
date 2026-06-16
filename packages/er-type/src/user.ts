@@ -345,7 +345,7 @@ export interface UserInfo {
 
 export interface TopRank {
   rank: number;
-  userNum: number;
   nickname: string;
   mmr: number;
+  userEmblems: unknown[];
 }

@@ -118,11 +118,13 @@ ALTER TABLE compare_history DISABLE ROW LEVEL SECURITY;
 크롤러가 매일 수집한 아시아 서버 솔로랭크 탑 랭커 목록. `/ranker-data` 페이지에서 표시.
 
 ```sql
-CREATE TABLE IF NOT EXISTS rankers (
-  user_num    BIGINT PRIMARY KEY,          -- BSER userNum (TopRank.userNum)
-  nickname    TEXT NOT NULL,
-  mmr         INTEGER NOT NULL,
-  rank        INTEGER NOT NULL,            -- 수집 시점 순위
+-- 기존 테이블 삭제 후 재생성 (스키마 변경 시)
+DROP TABLE IF EXISTS rankers;
+
+CREATE TABLE rankers (
+  nickname     TEXT PRIMARY KEY,           -- 닉네임 (TopRank 응답에 userNum 없음)
+  mmr          INTEGER NOT NULL,
+  rank         INTEGER NOT NULL,           -- 수집 시점 순위
   collected_at TIMESTAMPTZ NOT NULL        -- 수집 일시
 );
 
@@ -136,9 +138,13 @@ ALTER TABLE rankers DISABLE ROW LEVEL SECURITY;
 크롤러가 수집한 랭커별 솔로랭크 게임 상세. `version_major` 기준으로 최근 2패치만 보관.
 
 ```sql
-CREATE TABLE IF NOT EXISTS games (
+-- 기존 테이블 삭제 후 재생성 (스키마 변경 시)
+DROP TABLE IF EXISTS kill_matchups;
+DROP TABLE IF EXISTS games;
+
+CREATE TABLE games (
   game_id                   BIGINT NOT NULL,
-  user_num                  BIGINT NOT NULL,
+  user_id                   TEXT NOT NULL,         -- BSER userId (TopRank 응답에 userNum 없어 nickname → userId 조회)
   season_id                 INTEGER,
   version_major             INTEGER,       -- 패치 버전 (e.g. 4 → v11.4)
   version_minor             INTEGER,
@@ -215,7 +221,7 @@ CREATE TABLE IF NOT EXISTS games (
   battle_zone_player_kill   INTEGER,
   main_weather              INTEGER,
   sub_weather               INTEGER,
-  PRIMARY KEY (game_id, user_num)
+  PRIMARY KEY (game_id, user_id)
 );
 
 ALTER TABLE games DISABLE ROW LEVEL SECURITY;

@@ -55,7 +55,6 @@ export type CrawlStatusRow = {
 }
 
 export type RankerRow = {
-  userNum: number
   nickname: string
   mmr: number
   rank: number
@@ -71,7 +70,6 @@ export const getRankers = async (): Promise<RankerRow[]> => {
   return (data ?? []).map((row) => {
     const r = row as Row
     return {
-      userNum: r.user_num as number,
       nickname: r.nickname as string,
       mmr: r.mmr as number,
       rank: r.rank as number,
