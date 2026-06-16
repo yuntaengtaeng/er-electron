@@ -1,0 +1,19 @@
+{
+  "name": "@repo/crawler",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node -r tsx/cjs src/index.ts"
+  },
+  "dependencies": {
+    "@repo/er-api-client": "workspace:*",
+    "@repo/er-type": "workspace:*",
+    "@supabase/supabase-js": "^2.108.1",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "tsx": "^4.19.4",
+    "typescript": "^6.0.3"
+  }
+}
