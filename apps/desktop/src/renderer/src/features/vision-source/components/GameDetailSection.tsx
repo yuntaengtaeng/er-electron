@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { Text } from "@repo/ui";
 import type { GameDetail } from "@repo/service";
 import { getCharacterById, getItemById, normalizeImageUrl } from "../../../shared/utils/meta";
+import { formatDuration } from "../../../shared/utils/format";
 
 const GRADE_INDEX: Record<string, number> = {
   Common: 1,
@@ -180,6 +181,8 @@ export const GameDetailSection = ({ games }: Props) => (
               <Text variant="bodyBold">{character?.name ?? `#${game.characterNum}`}</Text>
               <Dot>·</Dot>
               <Text variant="body">{game.gameRank}등</Text>
+              <Dot>·</Dot>
+              <Text variant="body">{formatDuration(game.playTime)}</Text>
               <Dot>·</Dot>
               <Text variant="body">{game.kills} / {game.deaths} / {game.assists}</Text>
               <Dot>·</Dot>

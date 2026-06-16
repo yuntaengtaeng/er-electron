@@ -150,21 +150,35 @@ const HorizontalBarChart = ({
   );
 };
 
+const PLAYTIME_BUCKETS = [
+  { label: "3분 미만",  min: 0,    max: 180  },
+  { label: "3~6분",    min: 180,  max: 360  },
+  { label: "6~9분",    min: 360,  max: 540  },
+  { label: "9~12분",   min: 540,  max: 720  },
+  { label: "12~15분",  min: 720,  max: 900  },
+  { label: "15~18분",  min: 900,  max: 1080 },
+  { label: "18~21분",  min: 1080, max: 1260 },
+  { label: "21~24분",  min: 1260, max: 1440 },
+  { label: "24분 이상", min: 1440, max: Infinity },
+] as const;
+
 interface Props {
   games: GameDetail[];
 }
 
 export const VisionStatsSection = ({ games }: Props) => {
-  const rankItems = useMemo((): BarItem[] => {
-    const map = groupBy(games, (g) => String(g.gameRank));
-    return Array.from(map.entries())
-      .map(([key, scores]) => ({
-        key,
-        label: `${key}등`,
-        avg: avg(scores),
-        count: scores.length,
-      }))
-      .sort((a, b) => Number(a.key) - Number(b.key));
+  const playTimeItems = useMemo((): BarItem[] => {
+    return PLAYTIME_BUCKETS.map((bucket, idx) => {
+      const bucketGames = games.filter(
+        (g) => g.playTime >= bucket.min && g.playTime < bucket.max,
+      );
+      return {
+        key: String(idx),
+        label: bucket.label,
+        avg: avg(bucketGames.map((g) => g.viewContribution)),
+        count: bucketGames.length,
+      };
+    }).filter((item) => item.count > 0);
   }, [games]);
 
   const characterItems = useMemo((): BarItem[] => {
@@ -186,10 +200,10 @@ export const VisionStatsSection = ({ games }: Props) => {
   return (
     <Wrapper>
       <SectionTitle>
-        <Text variant="bodyBold">등수별 · 실험체별 분석</Text>
+        <Text variant="bodyBold">생존 시간대별 · 실험체별 분석</Text>
       </SectionTitle>
       <Grid>
-        <HorizontalBarChart title="등수별 평균 시야 점수" items={rankItems} />
+        <HorizontalBarChart title="생존 시간대별 평균 시야 점수" items={playTimeItems} />
         <HorizontalBarChart title="실험체별 평균 시야 점수" items={characterItems} showImage />
       </Grid>
     </Wrapper>

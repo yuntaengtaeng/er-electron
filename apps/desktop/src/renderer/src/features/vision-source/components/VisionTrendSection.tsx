@@ -1,13 +1,17 @@
 import styled, { useTheme } from "styled-components";
 import { Text } from "@repo/ui";
 import type { GameDetail } from "@repo/service";
+import { formatDuration } from "../../../shared/utils/format";
 
-// 1위=금, 2위=은, 3위=동, 나머지=기본 (도메인 전용 색상 상수)
-const RANK_DOT_COLORS: Record<string, string> = {
-  "1": "#FFD166",
-  "2": "#A8B8C8",
-  "3": "#C98E5E",
-};
+// 생존 시간 3분위 색상 (도메인 전용 상수)
+const PLAYTIME_DOT_COLORS = {
+  long:   "#4FC3A1",
+  medium: "#A8B8C8",
+  short:  "#E07B7B",
+} as const;
+
+const DOT_MIN_R = 3;
+const DOT_MAX_R = 10;
 
 const SVG_W = 800;
 const SVG_H = 220;
@@ -24,6 +28,26 @@ const ChartCard = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border.subtle};
   border-radius: ${({ theme }) => theme.radius.comfortable};
   padding: ${({ theme }) => theme.spacing[5]};
+`;
+
+const Legend = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing[4]};
+  margin-top: ${({ theme }) => theme.spacing[3]};
+`;
+
+const LegendItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[1]};
+`;
+
+const LegendDot = styled.div<{ $color: string; $size: number }>`
+  width: ${({ $size }) => $size}px;
+  height: ${({ $size }) => $size}px;
+  border-radius: 50%;
+  background-color: ${({ $color }) => $color};
+  flex-shrink: 0;
 `;
 
 interface Props {
@@ -53,11 +77,24 @@ export const VisionTrendSection = ({ games }: Props) => {
   const cy = (v: number) =>
     PAD.top + (1 - (v - minY) / (maxY - minY)) * innerH;
 
+  const sortedPlayTimes = [...reversed].map((g) => g.playTime).sort((a, b) => a - b);
+  const t1 = sortedPlayTimes[Math.floor(sortedPlayTimes.length / 3)] ?? 0;
+  const t2 = sortedPlayTimes[Math.floor((sortedPlayTimes.length * 2) / 3)] ?? 0;
+  const playTimeTier = (pt: number) =>
+    pt >= t2 ? "long" : pt >= t1 ? "medium" : "short";
+
+  const minPlayTime = sortedPlayTimes[0] ?? 0;
+  const maxPlayTime = sortedPlayTimes[sortedPlayTimes.length - 1] ?? 1;
+  const dotRadius = (pt: number) => {
+    if (maxPlayTime === minPlayTime) return (DOT_MIN_R + DOT_MAX_R) / 2;
+    return DOT_MIN_R + ((pt - minPlayTime) / (maxPlayTime - minPlayTime)) * (DOT_MAX_R - DOT_MIN_R);
+  };
+
   const pts = reversed.map((g, i) => ({
     x: cx(i),
     y: cy(g.viewContribution),
     score: g.viewContribution,
-    rank: g.gameRank,
+    playTime: g.playTime,
   }));
 
   const linePath = pts
@@ -75,7 +112,6 @@ export const VisionTrendSection = ({ games }: Props) => {
     (_, i) => minY + (maxY - minY) * ((i + 1) / N_TICKS),
   );
 
-  // x축 레이블: 최대 8개 표시
   const xLabelCount = Math.min(n, 8);
   const xLabelIndices = Array.from({ length: xLabelCount }, (_, i) =>
     Math.round((i / (xLabelCount - 1 || 1)) * (n - 1)),
@@ -156,21 +192,39 @@ export const VisionTrendSection = ({ games }: Props) => {
             strokeLinejoin="round"
           />
 
-          {/* 점 */}
-          {pts.map(({ x, y, score, rank }, i) => (
-            <circle
-              key={i}
-              cx={x}
-              cy={y}
-              r="5"
-              fill={RANK_DOT_COLORS[String(rank)] ?? theme.colors.brand.green}
-              stroke={theme.colors.background.surface}
-              strokeWidth="2"
-            >
-              <title>{`${i === n - 1 ? "최근" : `${n - i}판 전`} · ${rank}등 · 시야 ${score.toLocaleString()}`}</title>
-            </circle>
-          ))}
+          {/* 점 — 크기: 생존 시간, 색상: 생존 시간 분위 */}
+          {pts.map(({ x, y, score, playTime }, i) => {
+            const r = dotRadius(playTime);
+            return (
+              <circle
+                key={i}
+                cx={x}
+                cy={y}
+                r={r}
+                fill={PLAYTIME_DOT_COLORS[playTimeTier(playTime)]}
+                stroke={theme.colors.background.surface}
+                strokeWidth="2"
+              >
+                <title>{`${i === n - 1 ? "최근" : `${n - i}판 전`} · ${formatDuration(playTime)} 생존 · 시야 ${score.toLocaleString()}`}</title>
+              </circle>
+            );
+          })}
         </svg>
+
+        <Legend>
+          <LegendItem>
+            <LegendDot $color={PLAYTIME_DOT_COLORS.long} $size={DOT_MAX_R * 2} />
+            <Text variant="caption" color="secondary">오래 생존</Text>
+          </LegendItem>
+          <LegendItem>
+            <LegendDot $color={PLAYTIME_DOT_COLORS.medium} $size={(DOT_MIN_R + DOT_MAX_R)} />
+            <Text variant="caption" color="secondary">중간 생존</Text>
+          </LegendItem>
+          <LegendItem>
+            <LegendDot $color={PLAYTIME_DOT_COLORS.short} $size={DOT_MIN_R * 2} />
+            <Text variant="caption" color="secondary">짧은 생존</Text>
+          </LegendItem>
+        </Legend>
       </ChartCard>
     </Wrapper>
   );

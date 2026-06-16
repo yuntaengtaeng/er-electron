@@ -153,11 +153,15 @@ const InsightCard = ({
     if (count === 0) return 0;
     if (!hasBoth) return 100;
     if (higherIsBetter) return (val / maxVal) * 100;
-    // 등수: 낮을수록 좋음 → 낮은 값이 더 긴 바
     return val > 0 ? (minVal / val) * 100 : 0;
   };
 
   const delta = Math.abs(leftNum - rightNum);
+
+  const worseVal = higherIsBetter
+    ? Math.min(leftNum, rightNum)
+    : Math.max(leftNum, rightNum);
+  const pct = hasBoth && worseVal > 0 ? Math.round((delta / worseVal) * 100) : 0;
 
   return (
     <Card>
@@ -226,9 +230,11 @@ const InsightCard = ({
         <DeltaBadge>
           <DeltaArrow>▲</DeltaArrow>
           <DeltaValue>
-            {format(delta)}
-            {deltaSuffix} 차이
+            {format(delta)}{deltaSuffix} 차이
           </DeltaValue>
+          {pct > 0 && (
+            <DeltaArrow>· +{pct}%</DeltaArrow>
+          )}
         </DeltaBadge>
       )}
     </Card>
@@ -239,14 +245,20 @@ interface Props {
   games: GameDetail[];
 }
 
+const visionPerMin = (g: GameDetail) =>
+  g.playTime > 0 ? g.viewContribution / (g.playTime / 60) : 0;
+
 export const VisionInsightSection = ({ games }: Props) => {
-  const { viewSplit, batSplit, droneSplit, consoleSplit } = useMemo(() => {
-    const viewSplit = medianSplit(games, (g) => g.viewContribution);
+  const { vpmSplit, batSplit, droneSplit, consoleSplit } = useMemo(() => {
+    const vpmSplit = medianSplit(games, visionPerMin);
     const batSplit = medianSplit(games, (g) => g.batKills + g.mutantBatKills);
     const droneSplit = boolSplit(games, (g) => g.cameraFromDrone > 0);
     const consoleSplit = boolSplit(games, (g) => g.cameraFromConsole > 0);
-    return { viewSplit, batSplit, droneSplit, consoleSplit };
+    return { vpmSplit, batSplit, droneSplit, consoleSplit };
   }, [games]);
+
+  const avgVpmHigh = avgOf(vpmSplit.high, visionPerMin).toFixed(1);
+  const avgVpmLow = avgOf(vpmSplit.low, visionPerMin).toFixed(1);
 
   return (
     <Wrapper>
@@ -255,56 +267,56 @@ export const VisionInsightSection = ({ games }: Props) => {
       </SectionTitle>
       <Grid>
         <InsightCard
-          title="시야 점수가 높으면 등수도 좋을까?"
-          leftLabel="시야 높은 게임"
-          leftNum={avgOf(viewSplit.high, (g) => g.gameRank)}
-          leftCount={viewSplit.high.length}
-          rightLabel="시야 낮은 게임"
-          rightNum={avgOf(viewSplit.low, (g) => g.gameRank)}
-          rightCount={viewSplit.low.length}
+          title="분당 시야 점수가 높으면 등수도 좋을까?"
+          leftLabel={`상위 절반 (${avgVpmHigh}점/분)`}
+          leftNum={avgOf(vpmSplit.high, (g) => g.gameRank)}
+          leftCount={vpmSplit.high.length}
+          rightLabel={`하위 절반 (${avgVpmLow}점/분)`}
+          rightNum={avgOf(vpmSplit.low, (g) => g.gameRank)}
+          rightCount={vpmSplit.low.length}
           format={(n) => n.toFixed(1)}
           valueSuffix="등"
           higherIsBetter={false}
           deltaSuffix="위"
         />
         <InsightCard
-          title="박쥐를 많이 잡으면 시야 점수가 높을까?"
+          title="박쥐를 많이 잡으면 분당 시야 점수가 높을까?"
           leftLabel="박쥐 많이 잡은 게임"
-          leftNum={avgOf(batSplit.high, (g) => g.viewContribution)}
+          leftNum={avgOf(batSplit.high, visionPerMin)}
           leftCount={batSplit.high.length}
           rightLabel="박쥐 적게 잡은 게임"
-          rightNum={avgOf(batSplit.low, (g) => g.viewContribution)}
+          rightNum={avgOf(batSplit.low, visionPerMin)}
           rightCount={batSplit.low.length}
-          format={(n) => Math.round(n).toLocaleString()}
-          valueSuffix="점"
+          format={(n) => n.toFixed(1)}
+          valueSuffix="점/분"
           higherIsBetter={true}
-          deltaSuffix="점"
+          deltaSuffix="점/분"
         />
         <InsightCard
-          title="드론으로 망원 카메라를 사면 등수가 좋을까?"
+          title="드론으로 망원 카메라를 사면 분당 시야 점수가 높을까?"
           leftLabel="드론으로 구매한 게임"
-          leftNum={avgOf(droneSplit.yes, (g) => g.gameRank)}
+          leftNum={avgOf(droneSplit.yes, visionPerMin)}
           leftCount={droneSplit.yes.length}
           rightLabel="드론으로 안 산 게임"
-          rightNum={avgOf(droneSplit.no, (g) => g.gameRank)}
+          rightNum={avgOf(droneSplit.no, visionPerMin)}
           rightCount={droneSplit.no.length}
           format={(n) => n.toFixed(1)}
-          valueSuffix="등"
-          higherIsBetter={false}
-          deltaSuffix="위"
+          valueSuffix="점/분"
+          higherIsBetter={true}
+          deltaSuffix="점/분"
         />
         <InsightCard
-          title="콘솔로 망원 카메라를 사면 등수가 좋을까?"
+          title="콘솔로 망원 카메라를 사면 분당 시야 점수가 높을까?"
           leftLabel="콘솔로 구매한 게임"
-          leftNum={avgOf(consoleSplit.yes, (g) => g.gameRank)}
+          leftNum={avgOf(consoleSplit.yes, visionPerMin)}
           leftCount={consoleSplit.yes.length}
           rightLabel="콘솔로 안 산 게임"
-          rightNum={avgOf(consoleSplit.no, (g) => g.gameRank)}
+          rightNum={avgOf(consoleSplit.no, visionPerMin)}
           rightCount={consoleSplit.no.length}
           format={(n) => n.toFixed(1)}
-          valueSuffix="등"
-          higherIsBetter={false}
-          deltaSuffix="위"
+          valueSuffix="점/분"
+          higherIsBetter={true}
+          deltaSuffix="점/분"
         />
       </Grid>
     </Wrapper>

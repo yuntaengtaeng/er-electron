@@ -16,6 +16,7 @@ const MONSTER_IDS = {
 export interface GameDetail {
   characterNum: number;
   gameRank: number;
+  playTime: number;
   kills: number;
   deaths: number;
   assists: number;
@@ -130,6 +131,7 @@ export const getVisionSource = async (
       return {
         characterNum: g.characterNum,
         gameRank: g.gameRank,
+        playTime: g.playTime,
         kills: g.playerKill,
         deaths: g.playerDeaths,
         assists: g.playerAssistant,
