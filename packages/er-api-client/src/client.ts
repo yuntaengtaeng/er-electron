@@ -90,7 +90,7 @@ export class ErApiClient {
     return this.get<TopRank[]>(`/v1/rank/top/${seasonId}/${matchingTeamMode}`, 'topRanks');
   }
 
-  getTopRankersByServer(seasonId: number, matchingTeamMode: number, serverCode: string) {
+  getTopRankersByServer(seasonId: number, matchingTeamMode: number, serverCode: number) {
     return this.get<TopRank[]>(`/v1/rank/top/${seasonId}/${matchingTeamMode}/${serverCode}`, 'topRanks');
   }
 

@@ -12,7 +12,7 @@ export const createClient = (apiKey: string) => {
   };
 
   return {
-    getTopRankersByServer: async (seasonId: number, teamMode: number, serverCode: string) => {
+    getTopRankersByServer: async (seasonId: number, teamMode: number, serverCode: number) => {
       await throttle();
       return client.getTopRankersByServer(seasonId, teamMode, serverCode);
     },

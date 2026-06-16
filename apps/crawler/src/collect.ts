@@ -5,7 +5,8 @@ import { writeStatus } from './supabase';
 import { createClient } from './api';
 
 const CURRENT_SEASON_ID = 39;
-const SERVER_CODE = 'AS';
+const SERVER_CODE = 10;   // Asia server
+const MATCHING_TEAM_MODE = 3;
 const BATCH_SIZE = 100;
 
 export const collect = async (supabase: SupabaseClient, apiKey: string) => {
@@ -15,7 +16,7 @@ export const collect = async (supabase: SupabaseClient, apiKey: string) => {
   await writeStatus(supabase, { status: 'collecting', started_at: startedAt, progress_current: 0, progress_total: 0 });
 
   console.log('[crawler] 랭커 목록 조회 중...');
-  const rankers = await api.getTopRankersByServer(CURRENT_SEASON_ID, MatchingTeamMode.Solo, SERVER_CODE);
+  const rankers = await api.getTopRankersByServer(CURRENT_SEASON_ID, MATCHING_TEAM_MODE, SERVER_CODE);
   console.log(`[crawler] 랭커 ${rankers.length}명`);
 
   await writeStatus(supabase, { status: 'collecting', started_at: startedAt, progress_current: 0, progress_total: rankers.length });
