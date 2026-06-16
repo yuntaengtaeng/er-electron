@@ -11,16 +11,19 @@
 - **스타일**: styled-components
 - **라우팅**: react-router-dom (HashRouter)
 - **패키지 매니저**: pnpm
+- **데이터베이스**: Supabase (PostgreSQL)
 
 ## 모노레포 패키지 구조
 
 ```
 apps/
   desktop/              # Electron 앱
+  crawler/              # 랭커 데이터 수집기 (GitHub Actions 실행)
 packages/
   er-api-client/        # BSER Open API HTTP 클라이언트 (ErApiClient 클래스)
   er-type/              # API 공유 타입 정의
-  service/              # 비즈니스 서비스 레이어 (er-api-client 래핑)
+  service/              # 비즈니스 서비스 레이어 (er-api-client + club-store 래핑)
+  club-store/           # Supabase 클라이언트 (클럽/랭커 데이터 읽기/쓰기)
   design-system/        # 디자인 토큰
   ui/                   # 공통 React 컴포넌트
   typescript-config/    # 공유 tsconfig
@@ -32,8 +35,13 @@ packages/
 ```
 apps/desktop (renderer)
   → @repo/service          # 비즈니스 로직
-    → @repo/er-api-client  # HTTP 클라이언트
+    → @repo/er-api-client  # BSER Open API HTTP 클라이언트
       → @repo/er-type      # 타입
+    → @repo/club-store     # Supabase (클럽 멤버, 랭커 데이터, 수집 상태)
+
+apps/crawler (GitHub Actions)
+  → @repo/er-api-client    # BSER API 조회
+  → @supabase/supabase-js  # Supabase 직접 접근 (service_role key)
 ```
 
 ## 핵심 패턴
@@ -101,6 +109,75 @@ const RECON_DRONE_ID      = 502208  // 정찰 드론
 const EMP_DRONE_ID        = 502308  // EMP 드론
 ```
 
+## Supabase
+
+### 개요
+- 클럽 멤버 데이터 + 랭커 수집 데이터를 저장하는 PostgreSQL 호스팅
+- **앱(renderer)**: anon/publishable key로 읽기 전용 접근 → `packages/club-store/`
+- **크롤러(GitHub Actions)**: service_role key로 쓰기 접근 → `apps/crawler/src/supabase.ts`
+
+### 환경변수
+| 위치 | 변수 | 용도 |
+|---|---|---|
+| `apps/desktop/.env` | `VITE_SUPABASE_URL` | 앱에서 Supabase 접근 |
+| `apps/desktop/.env` | `VITE_SUPABASE_PUBLISHABLE_KEY` | 앱용 anon key (읽기) |
+| `apps/crawler/.env` | `SUPABASE_URL` | 크롤러 Supabase 접근 |
+| `apps/crawler/.env` | `SUPABASE_SERVICE_KEY` | 크롤러용 service_role key (읽기/쓰기) |
+| GitHub Secrets | `API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` | GitHub Actions 실행 시 주입 |
+
+### 테이블 구조
+```sql
+-- 클럽 멤버 (앱에서 수동 관리)
+club_members (nickname, mmr, rank, rank_percent, season_id, updated_at, representative_character_code)
+
+-- 랭커 데이터 (크롤러가 수집)
+rankers       (user_num PK, nickname, mmr, rank, collected_at)
+games         (game_id + user_num PK, season_id, version_major, character_num, ... 전체 UserGame 필드)
+kill_matchups (game_id + killer_char_num + killed_char_num PK, count)
+
+-- 수집 상태 (단일 row, id=1 고정)
+crawl_status  (id=1, status: 'idle'|'collecting'|'error', started_at, completed_at,
+               progress_current, progress_total, error_message)
+```
+
+### 버전 프루닝 정책
+- `games.version_major` 기준으로 가장 최근 2개 패치만 보관
+- 예: v11.4·v11.5 보관 중 v11.6 수집 시 → v11.4 자동 삭제
+- 삭제 순서: `kill_matchups` → `games` (FK 참조 방향)
+
+### packages/club-store
+- `initClubStore(url, anonKey)` — anon key로 클라이언트 초기화 (앱에서 호출)
+- `getRankers()` — rankers 테이블 전체 조회 (rank ASC)
+- `getCollectedVersions()` — games 테이블에서 distinct version_major 목록 (DESC)
+- `getCrawlStatus()` — crawl_status 테이블 단일 행 조회
+- `getMemberByNickname / upsertMember / getAllMembers` — 클럽 멤버 CRUD
+
+## 크롤러 (apps/crawler)
+
+### 구조
+```
+apps/crawler/src/
+  index.ts      # 진입점: dotenv 로드 → collect() 실행
+  api.ts        # ErApiClient 래퍼: 1req/s rate limiting (nextAllowedAt)
+  collect.ts    # 수집 로직: 랭커 조회 → 게임 수집 → Supabase upsert → 프루닝
+  supabase.ts   # createSupabaseClient, writeStatus 헬퍼
+```
+
+### 수집 범위
+- 서버: AS (아시아), 모드: Solo Rank (MatchingTeamMode.Solo = 1), 시즌: 39
+- 랭커당 최대 2페이지(20게임) 조회 후 solo rank season 39 게임만 필터링
+- 배치 100개 단위로 flush, 10명마다 crawl_status 업데이트
+
+### GitHub Actions 스케줄
+- `.github/workflows/crawl.yml` — 매일 04:00 KST (UTC 19:00) 자동 실행
+- `workflow_dispatch`로 수동 실행 가능
+- GitHub Secrets: `API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` 등록 필요
+
+### CrawlStatusBanner
+- `shared/components/CrawlStatusBanner.tsx` — 수집 중(`status: 'collecting'`)일 때 홈 화면 상단 배너
+- `getCrawlStatus()`를 30초마다 폴링 (Supabase 직접 조회, IPC 없음)
+- HomePage에 NavBar 아래 배치
+
 ## Renderer 아키텍처 (Feature-based + Clean Architecture)
 
 ```
@@ -110,9 +187,9 @@ apps/desktop/src/renderer/src/
 │   └── router.tsx       # Route 정의 (각 feature의 Page를 import)
 ├── features/
 │   ├── home/
-│   │   ├── components/  # HomePage, TopRankersSection
-│   │   ├── hooks/       # useTopRankers
-│   │   └── index.ts     # public API export
+│   │   ├── components/  # HomePage, ClubRankingSection
+│   │   ├── hooks/       # useClubMembers
+│   │   └── index.ts
 │   ├── player/
 │   │   ├── components/  # PlayerPage(오케스트레이터), PlayerProfile,
 │   │   │                # WinRateSection, StatsGrid, TopCharacters, MatchHistory
@@ -132,12 +209,21 @@ apps/desktop/src/renderer/src/
 │   │   │                # VisionInsightSection, GameDetailSection
 │   │   ├── hooks/       # useVisionSourceData
 │   │   └── index.ts
+│   ├── phase-combat/
+│   │   ├── components/  # PhaseCombatPage, ...
+│   │   ├── hooks/       # usePhaseCombatData
+│   │   └── index.ts
+│   ├── ranker-data/
+│   │   ├── components/  # RankerDataPage (수집된 랭커 테이블)
+│   │   ├── hooks/       # useRankerData
+│   │   └── index.ts
 │   └── ui-guide/
 │       ├── components/  # UIGuidePage
 │       └── index.ts
 └── shared/
     ├── components/
-    │   ├── AppHeader.tsx  # 공용 헤더 (뒤로가기 + 로고 + 우측 슬롯)
+    │   ├── AppHeader.tsx        # 공용 헤더 (뒤로가기 + 로고 + 우측 슬롯)
+    │   ├── CrawlStatusBanner.tsx # 랭커 데이터 수집 중 배너
     │   └── Loading.tsx
     ├── utils/
     │   ├── format.ts    # formatDuration, timeAgo
@@ -213,6 +299,10 @@ getAreaByKey(key)      // e.g. "Harbor" → { name: "항구" }
 getWeaponTypeFromEquipment(equipment) // equipment["0"] → items.json weaponType 영어 key 반환
 calcItemCredits(equipment)            // equipment → Legend/Mythic 아이템의 Epic 재료 키오스크 가격 합산
 MATERIAL_PRICES                       // Epic 재료 ID → 키오스크 가격 (생명의나무 200, 미스릴 250 등)
+
+// 버전 표기
+currentSeasonDisplayVersion           // seasons.json의 현재 시즌 번호 (e.g. "11")
+// 패치 버전 표기: `v${currentSeasonDisplayVersion}.${game.versionMajor}` → "v11.4"
 ```
 
 - **`masteryLevel` API 필드 주의**: `UserGame.masteryLevel` 키는 영어 key("Bat")가 아닌 숫자 코드 혼재 — 무기 종류 판별에 사용 금지. 대신 `equipment["0"]`(무기 슬롯) → `getWeaponTypeFromEquipment` 사용
@@ -268,7 +358,8 @@ padding-right: ${spacing[8]};  // ✅
 
 ## 주요 상수
 
-- `CURRENT_SEASON_ID = 39` — `packages/service/src/er-service.ts`
+- `CURRENT_SEASON_ID = 39` — `packages/service/src/er-service.ts`, `apps/crawler/src/collect.ts`
+- `SERVER_CODE = 'AS'` — 크롤러 수집 서버 (아시아)
 - 게임 목록은 커서 기반 페이지네이션 — API 1회 호출당 10개 반환. `usePlayerData`가 `cursors[]` 히스토리를 관리하며 이전/다음 이동. `goNext(cursor)` / `goPrev(prevCursor)` 콜백으로 페이지 전환
 
 ## 코드 작성 규칙
@@ -285,6 +376,8 @@ pnpm dev          # 전체 turbo dev (루트에서 실행)
 
 ## 환경변수 파일 위치
 
-- `apps/desktop/.env` — `VITE_API_KEY` (renderer용, git 제외)
+- `apps/desktop/.env` — `VITE_API_KEY`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (renderer용, git 제외)
+- `apps/crawler/.env` — `API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` (크롤러용, git 제외)
+- `apps/crawler/.env.example` — 크롤러 환경변수 예시 파일 (git 포함)
 - `packages/er-api-client/.env` — 레거시, 현재 미사용
 - `.gitignore`에 `.env`, `.env.*` 패턴 추가됨
