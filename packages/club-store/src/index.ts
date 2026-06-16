@@ -1,5 +1,5 @@
 export { initClubStore } from './client'
 export type { ClubMember } from './types'
-export { getMemberByNickname, upsertMember, getAllMembers, getCrawlStatus } from './operations'
-export type { CrawlStatusRow } from './operations'
+export { getMemberByNickname, upsertMember, getAllMembers, getCrawlStatus, getRankers, getCollectedVersions } from './operations'
+export type { CrawlStatusRow, RankerRow } from './operations'
 export { logCompareSearch, getPopularCompareNicknames } from './compare-operations'

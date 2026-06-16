@@ -29,6 +29,12 @@ const Logo = styled.span`
   cursor: pointer;
 `;
 
+const NavRight = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing[2]};
+`;
+
 const HeroSection = styled.section`
   display: flex;
   flex-direction: column;
@@ -136,9 +142,14 @@ export default function HomePage() {
     <PageWrapper>
       <NavBar>
         <Logo onClick={() => navigate("/")}>ER STATS</Logo>
-        <Button variant="outlined" onClick={() => navigate("/ui-guide")}>
-          UI 가이드
-        </Button>
+        <NavRight>
+          <Button variant="outlined" onClick={() => navigate("/ranker-data")}>
+            랭커 데이터
+          </Button>
+          <Button variant="outlined" onClick={() => navigate("/ui-guide")}>
+            UI 가이드
+          </Button>
+        </NavRight>
       </NavBar>
 
       <CrawlStatusBanner />

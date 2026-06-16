@@ -54,6 +54,41 @@ export type CrawlStatusRow = {
   error_message: string | null
 }
 
+export type RankerRow = {
+  userNum: number
+  nickname: string
+  mmr: number
+  rank: number
+  collectedAt: string
+}
+
+export const getRankers = async (): Promise<RankerRow[]> => {
+  const { data, error } = await getClient()
+    .from('rankers')
+    .select('*')
+    .order('rank', { ascending: true })
+  if (error) throw error
+  return (data ?? []).map((row) => {
+    const r = row as Row
+    return {
+      userNum: r.user_num as number,
+      nickname: r.nickname as string,
+      mmr: r.mmr as number,
+      rank: r.rank as number,
+      collectedAt: r.collected_at as string,
+    }
+  })
+}
+
+export const getCollectedVersions = async (): Promise<number[]> => {
+  const { data } = await getClient()
+    .from('games')
+    .select('version_major')
+    .order('version_major', { ascending: false })
+  if (!data) return []
+  return [...new Set(data.map((r) => (r as Row).version_major as number))]
+}
+
 export const getCrawlStatus = async (): Promise<CrawlStatusRow> => {
   const { data } = await getClient()
     .from('crawl_status')
