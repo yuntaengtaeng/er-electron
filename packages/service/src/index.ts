@@ -7,3 +7,6 @@ export { getItemAnalysis } from "./item-analysis-service";
 export type { ItemAnalysisResult, CharacterItemAnalysis, WeaponTypeAnalysis, SlotItemStat } from "./item-analysis-service";
 export { getVisionSource } from "./vision-source-service";
 export type { VisionSourceResult, GameDetail } from "./vision-source-service";
+export { getPhaseCombat } from "./phase-combat-service";
+export type { PhaseCombatResult, CombatGame, AreaDeathStat } from "./phase-combat-service";
+
