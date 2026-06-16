@@ -1,11 +1,21 @@
 # Supabase 관리 문서
 
-## 환경변수 (`apps/desktop/.env`)
+## 환경변수
 
+**앱 (`apps/desktop/.env`)**
 ```env
 VITE_SUPABASE_URL=https://<project-id>.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_<key>
 ```
+
+**크롤러 (`apps/crawler/.env`)**
+```env
+API_KEY=<BSER Open API 키>
+SUPABASE_URL=https://<project-id>.supabase.co
+SUPABASE_SERVICE_KEY=<service_role 키>
+```
+
+**GitHub Actions Secrets** (`API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`)
 
 ---
 
@@ -100,6 +110,169 @@ ALTER TABLE compare_history DISABLE ROW LEVEL SECURITY;
 
 > RLS: `club_members`와 동일하게 비활성화.
 > 테이블 미생성 시 인기 추천 기능만 조용히 비활성화되며, 비교 기능 자체는 정상 동작.
+
+---
+
+### `rankers`
+
+크롤러가 매일 수집한 아시아 서버 솔로랭크 탑 랭커 목록. `/ranker-data` 페이지에서 표시.
+
+```sql
+CREATE TABLE IF NOT EXISTS rankers (
+  user_num    BIGINT PRIMARY KEY,          -- BSER userNum (TopRank.userNum)
+  nickname    TEXT NOT NULL,
+  mmr         INTEGER NOT NULL,
+  rank        INTEGER NOT NULL,            -- 수집 시점 순위
+  collected_at TIMESTAMPTZ NOT NULL        -- 수집 일시
+);
+
+ALTER TABLE rankers DISABLE ROW LEVEL SECURITY;
+```
+
+---
+
+### `games`
+
+크롤러가 수집한 랭커별 솔로랭크 게임 상세. `version_major` 기준으로 최근 2패치만 보관.
+
+```sql
+CREATE TABLE IF NOT EXISTS games (
+  game_id                   BIGINT NOT NULL,
+  user_num                  BIGINT NOT NULL,
+  season_id                 INTEGER,
+  version_major             INTEGER,       -- 패치 버전 (e.g. 4 → v11.4)
+  version_minor             INTEGER,
+  matching_team_mode        INTEGER,
+  character_num             INTEGER,
+  game_rank                 INTEGER,
+  team_number               INTEGER,
+  start_dtm                 TEXT,
+  play_time                 INTEGER,
+  player_kill               INTEGER,
+  player_assistant          INTEGER,
+  player_deaths             INTEGER,
+  team_kill                 INTEGER,
+  terminate_count           INTEGER,
+  kills_phase_one           INTEGER,
+  kills_phase_two           INTEGER,
+  kills_phase_three         INTEGER,
+  cc_time_to_player         REAL,
+  total_double_kill         INTEGER,
+  total_triple_kill         INTEGER,
+  total_quadra_kill         INTEGER,
+  damage_to_player          INTEGER,
+  damage_from_player        INTEGER,
+  damage_offseted_by_shield INTEGER,
+  damage_to_monster         INTEGER,
+  heal_amount               INTEGER,
+  team_recover              INTEGER,
+  protect_absorb            INTEGER,
+  equipment                 JSONB,         -- { "0": itemId, "1": itemId, ... }
+  equip_first_item_for_log  JSONB,
+  craft_uncommon            INTEGER,
+  craft_rare                INTEGER,
+  craft_epic                INTEGER,
+  craft_legend              INTEGER,
+  craft_mythic              INTEGER,
+  trait_first_core          INTEGER,
+  trait_first_sub           JSONB,
+  trait_second_sub          JSONB,
+  tactical_skill_group      INTEGER,
+  tactical_skill_level      INTEGER,
+  tactical_skill_use_count  INTEGER,
+  final_infusion            INTEGER,
+  skill_order_info          JSONB,
+  view_contribution         INTEGER,
+  add_telephoto_camera      INTEGER,
+  add_surveillance_camera   INTEGER,
+  use_recon_drone           INTEGER,
+  use_emp_drone             INTEGER,
+  kill_monsters             JSONB,         -- { "2": count, "13": count, ... }
+  item_transferred_drone    JSONB,
+  item_transferred_console  JSONB,
+  place_of_start            TEXT,
+  place_of_death            TEXT,
+  killer_character          TEXT,
+  killer_weapon             TEXT,
+  route_id_of_start         INTEGER,
+  use_hyper_loop            INTEGER,
+  total_gain_vf_credit      INTEGER,
+  sum_used_vf_credits       INTEGER,
+  credit_source             JSONB,
+  adaptive_force            INTEGER,
+  adaptive_force_attack     INTEGER,
+  adaptive_force_amplify    INTEGER,
+  max_hp                    INTEGER,
+  attack_power              INTEGER,
+  defense                   INTEGER,
+  cool_down_reduction       REAL,
+  get_buff_cube_red         INTEGER,
+  get_buff_cube_purple      INTEGER,
+  get_buff_cube_green       INTEGER,
+  get_buff_cube_gold        INTEGER,
+  enter_dimension_rift      INTEGER,
+  win_from_dimension_rift   INTEGER,
+  battle_zone_player_kill   INTEGER,
+  main_weather              INTEGER,
+  sub_weather               INTEGER,
+  PRIMARY KEY (game_id, user_num)
+);
+
+ALTER TABLE games DISABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_games_character ON games(character_num);
+CREATE INDEX IF NOT EXISTS idx_games_version   ON games(version_major);
+```
+
+**버전 프루닝**: 크롤러 실행 시 `version_major` 기준 최근 2개 패치만 유지. 오래된 버전 삭제 시 `kill_matchups` → `games` 순서로 삭제.
+
+---
+
+### `kill_matchups`
+
+게임별 킬 상대 실험체 집계. `games.killDetails` 파싱 결과.
+
+```sql
+CREATE TABLE IF NOT EXISTS kill_matchups (
+  game_id          BIGINT NOT NULL,
+  killer_char_num  INTEGER NOT NULL,
+  killed_char_num  INTEGER NOT NULL,
+  count            INTEGER NOT NULL DEFAULT 1,
+  PRIMARY KEY (game_id, killer_char_num, killed_char_num)
+);
+
+ALTER TABLE kill_matchups DISABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_kill_matchups_killer ON kill_matchups(killer_char_num);
+```
+
+---
+
+### `crawl_status`
+
+크롤러 실행 상태를 저장하는 단일 row 테이블 (id=1 고정). 앱 홈 화면 수집 중 배너에 사용.
+
+```sql
+CREATE TABLE IF NOT EXISTS crawl_status (
+  id               INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+  status           TEXT NOT NULL DEFAULT 'idle',  -- 'idle' | 'collecting' | 'error'
+  started_at       TIMESTAMPTZ,
+  completed_at     TIMESTAMPTZ,
+  progress_current INTEGER DEFAULT 0,
+  progress_total   INTEGER DEFAULT 0,
+  error_message    TEXT
+);
+
+ALTER TABLE crawl_status DISABLE ROW LEVEL SECURITY;
+
+-- 초기 row 삽입 (없으면 getCrawlStatus가 idle 반환하므로 필수는 아님)
+INSERT INTO crawl_status (id) VALUES (1) ON CONFLICT DO NOTHING;
+```
+
+**상태 흐름**
+- `idle` → 수집 시작 → `collecting` (progress_current / progress_total 업데이트) → `idle` (완료)
+- 에러 발생 시 `error` + `error_message` 기록
+- 앱의 `CrawlStatusBanner`가 30초마다 폴링, `collecting`일 때만 배너 표시
 
 ---
 
