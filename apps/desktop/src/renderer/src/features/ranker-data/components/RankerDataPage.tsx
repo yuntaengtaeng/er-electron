@@ -1,11 +1,9 @@
-import { useNavigate } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 import { Text } from '@repo/ui'
 import { AppHeader } from '../../../shared/components/AppHeader'
 import { useRankerData } from '../hooks/useRankerData'
-import { getTierByMmr } from '../../../shared/utils/meta'
+import type { TabKey } from '../hooks/useRankerData'
 import { currentSeasonDisplayVersion } from '../../../shared/utils/meta'
-import { getTierColor } from '../../../shared/constants/tierColors'
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -14,21 +12,16 @@ const PageWrapper = styled.div`
 `
 
 const ContentWrapper = styled.div`
-  max-width: 900px;
-  margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing[8]} ${({ theme }) => theme.spacing[6]}
-    ${({ theme }) => theme.spacing[16]};
-`
-
-const PageHeader = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing[6]};
+  padding: ${({ theme }) => theme.spacing[6]};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing[4]};
 `
 
 const TitleRow = styled.div`
   display: flex;
   align-items: baseline;
   gap: ${({ theme }) => theme.spacing[4]};
-  margin-bottom: ${({ theme }) => theme.spacing[3]};
 `
 
 const SummaryChips = styled.div`
@@ -46,83 +39,75 @@ const Chip = styled.span`
   padding: ${({ theme }) => theme.spacing[1]} ${({ theme }) => theme.spacing[3]};
 `
 
-const TableCard = styled.div`
-  background-color: ${({ theme }) => theme.colors.background.surface};
+const TabRow = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing[1]};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
+`
+
+const TabButton = styled.button<{ $active: boolean }>`
+  ${({ theme }) => css(theme.typography.styles.captionBold)}
+  padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[4]};
+  border: none;
+  border-bottom: 2px solid ${({ $active, theme }) => $active ? theme.colors.text.primary : 'transparent'};
+  background: none;
+  color: ${({ $active, theme }) => $active ? theme.colors.text.primary : theme.colors.text.secondary};
+  cursor: pointer;
+  margin-bottom: -1px;
+`
+
+const TableScroll = styled.div`
+  overflow: auto;
+  max-height: calc(100vh - 240px);
   border: 1px solid ${({ theme }) => theme.colors.border.subtle};
   border-radius: ${({ theme }) => theme.radius.comfortable};
-  overflow: hidden;
 `
 
-const TableHead = styled.div`
-  display: grid;
-  grid-template-columns: 60px 1fr 120px 140px;
-  padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[5]};
+const Table = styled.table`
+  border-collapse: collapse;
+  white-space: nowrap;
+  font-size: 12px;
+  width: 100%;
+`
+
+const Th = styled.th`
+  position: sticky;
+  top: 0;
   background-color: ${({ theme }) => theme.colors.background.elevated};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
-`
-
-const HeadCell = styled.span`
-  ${({ theme }) => css(theme.typography.styles.captionBold)}
   color: ${({ theme }) => theme.colors.text.secondary};
-`
-
-const TableBody = styled.div`
-  overflow-y: auto;
-  max-height: calc(100vh - 260px);
-`
-
-const TableRow = styled.div`
-  display: grid;
-  grid-template-columns: 60px 1fr 120px 140px;
-  padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[5]};
-  cursor: pointer;
-  transition: background-color 0.12s;
+  font-weight: 600;
+  padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[3]};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
+  border-right: 1px solid ${({ theme }) => theme.colors.border.subtle};
+  text-align: left;
 
   &:last-child {
+    border-right: none;
+  }
+`
+
+const Td = styled.td`
+  padding: ${({ theme }) => theme.spacing[1.5]} ${({ theme }) => theme.spacing[3]};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
+  border-right: 1px solid ${({ theme }) => theme.colors.border.subtle};
+  color: ${({ theme }) => theme.colors.text.primary};
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:last-child {
+    border-right: none;
+  }
+`
+
+const Tr = styled.tr`
+  &:last-child td {
     border-bottom: none;
   }
 
-  &:hover {
+  &:hover td {
     background-color: ${({ theme }) => theme.colors.background.elevated};
   }
-`
-
-const RankCell = styled.span`
-  ${({ theme }) => css(theme.typography.styles.captionBold)}
-  color: ${({ theme }) => theme.colors.text.tertiary};
-`
-
-const NicknameCell = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-`
-
-const Nickname = styled.span`
-  ${({ theme }) => css(theme.typography.styles.body)}
-  color: ${({ theme }) => theme.colors.text.primary};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`
-
-const TierLabel = styled.span<{ $color: string }>`
-  ${({ theme }) => css(theme.typography.styles.micro)}
-  color: ${({ $color }) => $color};
-`
-
-const MmrCell = styled.span`
-  ${({ theme }) => css(theme.typography.styles.captionBold)}
-  color: ${({ theme }) => theme.colors.text.primary};
-  align-self: center;
-`
-
-const DateCell = styled.span`
-  ${({ theme }) => css(theme.typography.styles.caption)}
-  color: ${({ theme }) => theme.colors.text.secondary};
-  align-self: center;
 `
 
 const EmptyWrapper = styled.div`
@@ -130,51 +115,105 @@ const EmptyWrapper = styled.div`
   text-align: center;
 `
 
-const formatCollectedAt = (iso: string): string => {
-  const d = new Date(iso)
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+const formatCell = (v: unknown): string => {
+  if (v == null) return ''
+  if (typeof v === 'object') {
+    const s = JSON.stringify(v)
+    return s.length > 60 ? s.slice(0, 60) + '…' : s
+  }
+  return String(v)
+}
+
+type RawTableProps = {
+  rows: Record<string, unknown>[]
+  loading: boolean
+}
+
+const RawTable = ({ rows, loading }: RawTableProps) => {
+  if (loading) {
+    return (
+      <EmptyWrapper>
+        <Text variant="body" color="secondary">불러오는 중...</Text>
+      </EmptyWrapper>
+    )
+  }
+  if (rows.length === 0) {
+    return (
+      <EmptyWrapper>
+        <Text variant="body" color="secondary">데이터가 없습니다.</Text>
+      </EmptyWrapper>
+    )
+  }
+  const columns = Object.keys(rows[0]!)
+  return (
+    <TableScroll>
+      <Table>
+        <thead>
+          <tr>
+            {columns.map((col) => <Th key={col}>{col}</Th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <Tr key={i}>
+              {columns.map((col) => (
+                <Td key={col} title={formatCell(row[col])}>{formatCell(row[col])}</Td>
+              ))}
+            </Tr>
+          ))}
+        </tbody>
+      </Table>
+    </TableScroll>
+  )
+}
+
+const TAB_LABELS: Record<TabKey, string> = {
+  rankers: '랭커',
+  games: '게임',
+  matchups: '킬 매치업',
 }
 
 export default function RankerDataPage() {
-  const navigate = useNavigate()
-  const { rankers, versions, loading, error } = useRankerData()
+  const { tab, setTab, rankers, versions, games, matchups, loading, gamesLoading, matchupsLoading, error } = useRankerData()
 
-  const lastCollectedAt =
-    rankers.length > 0 ? formatCollectedAt(rankers[0]!.collectedAt) : null
+  const versionLabels = versions.map((v) => `v${currentSeasonDisplayVersion}.${v}`).join(', ')
 
-  const versionLabels = versions
-    .map((v) => `v${currentSeasonDisplayVersion}.${v}`)
-    .join(', ')
+  const tabRows: Record<TabKey, Record<string, unknown>[]> = {
+    rankers: rankers.map((r) => ({
+      rank: r.rank,
+      nickname: r.nickname,
+      mmr: r.mmr,
+      collected_at: r.collectedAt,
+    })),
+    games,
+    matchups,
+  }
+
+  const tabLoading: Record<TabKey, boolean> = {
+    rankers: loading,
+    games: gamesLoading,
+    matchups: matchupsLoading,
+  }
 
   return (
     <PageWrapper>
       <AppHeader />
-
       <ContentWrapper>
-        <PageHeader>
+        <div>
           <TitleRow>
             <Text variant="h1">랭커 데이터</Text>
             {!loading && rankers.length > 0 && (
-              <Text variant="caption" color="secondary">
-                AS 서버 · 솔로 랭크
-              </Text>
+              <Text variant="caption" color="secondary">AS 서버 · 트리오 랭크</Text>
             )}
           </TitleRow>
 
           {!loading && rankers.length > 0 && (
             <SummaryChips>
-              <Chip>{rankers.length.toLocaleString()}명 수집됨</Chip>
+              <Chip>{rankers.length.toLocaleString()}명</Chip>
               {versionLabels && <Chip>{versionLabels}</Chip>}
-              {lastCollectedAt && <Chip>마지막 수집: {lastCollectedAt}</Chip>}
             </SummaryChips>
           )}
-        </PageHeader>
-
-        {loading && (
-          <EmptyWrapper>
-            <Text variant="body" color="secondary">불러오는 중...</Text>
-          </EmptyWrapper>
-        )}
+        </div>
 
         {error && (
           <EmptyWrapper>
@@ -182,43 +221,21 @@ export default function RankerDataPage() {
           </EmptyWrapper>
         )}
 
-        {!loading && !error && rankers.length === 0 && (
-          <EmptyWrapper>
-            <Text variant="body" color="secondary">
-              수집된 데이터가 없습니다. GitHub Actions가 실행되면 자동으로 수집됩니다.
-            </Text>
-          </EmptyWrapper>
-        )}
+        {!error && (
+          <>
+            <TabRow>
+              {(Object.keys(TAB_LABELS) as TabKey[]).map((t) => (
+                <TabButton key={t} $active={tab === t} onClick={() => setTab(t)}>
+                  {TAB_LABELS[t]}
+                  {t === 'rankers' && !loading && ` (${rankers.length})`}
+                  {t === 'games' && !gamesLoading && games.length > 0 && ` (${games.length})`}
+                  {t === 'matchups' && !matchupsLoading && matchups.length > 0 && ` (${matchups.length})`}
+                </TabButton>
+              ))}
+            </TabRow>
 
-        {!loading && !error && rankers.length > 0 && (
-          <TableCard>
-            <TableHead>
-              <HeadCell>순위</HeadCell>
-              <HeadCell>닉네임</HeadCell>
-              <HeadCell>MMR</HeadCell>
-              <HeadCell>수집 일시</HeadCell>
-            </TableHead>
-            <TableBody>
-              {rankers.map((ranker) => {
-                const tier = getTierByMmr(ranker.mmr)
-                const tierColor = getTierColor(tier?.key)
-                return (
-                  <TableRow
-                    key={ranker.nickname}
-                    onClick={() => navigate(`/player/${encodeURIComponent(ranker.nickname)}`)}
-                  >
-                    <RankCell>#{ranker.rank}</RankCell>
-                    <NicknameCell>
-                      <Nickname>{ranker.nickname}</Nickname>
-                      <TierLabel $color={tierColor}>{tier?.name ?? 'Unrank'}</TierLabel>
-                    </NicknameCell>
-                    <MmrCell>{ranker.mmr.toLocaleString()} RP</MmrCell>
-                    <DateCell>{formatCollectedAt(ranker.collectedAt)}</DateCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </TableCard>
+            <RawTable rows={tabRows[tab]} loading={tabLoading[tab]} />
+          </>
         )}
       </ContentWrapper>
     </PageWrapper>

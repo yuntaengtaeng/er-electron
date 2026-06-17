@@ -78,6 +78,24 @@ export const getRankers = async (): Promise<RankerRow[]> => {
   })
 }
 
+export const getAllGames = async (): Promise<Record<string, unknown>[]> => {
+  const { data, error } = await getClient()
+    .from('games')
+    .select('*')
+    .order('game_id', { ascending: false })
+  if (error) throw error
+  return (data ?? []) as Record<string, unknown>[]
+}
+
+export const getAllKillMatchups = async (): Promise<Record<string, unknown>[]> => {
+  const { data, error } = await getClient()
+    .from('kill_matchups')
+    .select('*')
+    .order('game_id', { ascending: false })
+  if (error) throw error
+  return (data ?? []) as Record<string, unknown>[]
+}
+
 export const getCollectedVersions = async (): Promise<number[]> => {
   const { data } = await getClient()
     .from('games')

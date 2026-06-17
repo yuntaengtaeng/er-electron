@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { UserGame } from '@repo/er-type';
-import { MatchingMode, MatchingTeamMode } from '@repo/er-type';
+import { MatchingMode } from '@repo/er-type';
 import { writeStatus } from './supabase';
 import { createClient } from './api';
 
@@ -47,11 +47,11 @@ export const collect = async (supabase: SupabaseClient, apiKey: string) => {
     }
   };
 
-  const soloRank = (games: UserGame[]) =>
+  const rankFilter = (games: UserGame[]) =>
     games.filter(
       (g) =>
         g.matchingMode === MatchingMode.Rank &&
-        g.matchingTeamMode === MatchingTeamMode.Solo &&
+        g.matchingTeamMode === MATCHING_TEAM_MODE &&
         g.seasonId === CURRENT_SEASON_ID
     );
 
@@ -62,11 +62,11 @@ export const collect = async (supabase: SupabaseClient, apiKey: string) => {
     const userId = userInfo.userId;
 
     const page1 = await api.getUserGamesByUserId(userId);
-    const collected = soloRank(page1.data);
+    const collected = rankFilter(page1.data);
 
     if (collected.length < 10 && page1.next != null) {
       const page2 = await api.getUserGamesByUserId(userId, page1.next);
-      collected.push(...soloRank(page2.data));
+      collected.push(...rankFilter(page2.data));
     }
 
     for (const g of collected) {
