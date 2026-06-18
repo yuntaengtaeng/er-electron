@@ -102,7 +102,7 @@ const EmptyText = styled.div`
 
 export default function VisionSourcePage() {
   const [nickname, setNickname] = useState("");
-  const { result, loading, error, analyze } = useVisionSourceData();
+  const { result, rankerBenchmark, loading, error, analyze } = useVisionSourceData();
 
   const handleSubmit = () => analyze(nickname);
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -140,11 +140,19 @@ export default function VisionSourcePage() {
             <EmptyText>최근 랭크 게임 기록이 없습니다.</EmptyText>
           ) : (
             <ResultStack>
-              <VisionBreakdownSection data={result} />
+              <VisionBreakdownSection data={result} rankerBenchmark={rankerBenchmark} />
               <VisionTrendSection games={result.games} />
-              <VisionStatsSection games={result.games} />
+              <VisionStatsSection
+                games={result.games}
+                rankerGames={rankerBenchmark?.games}
+                rankerPeriodLabel={rankerBenchmark?.periodLabel}
+              />
               <VisionCameraSourceSection games={result.games} />
-              <VisionInsightSection games={result.games} />
+              <VisionInsightSection
+                games={result.games}
+                rankerGames={rankerBenchmark?.games}
+                rankerPeriodLabel={rankerBenchmark?.periodLabel}
+              />
               <GameDetailSection games={result.games} />
             </ResultStack>
           )

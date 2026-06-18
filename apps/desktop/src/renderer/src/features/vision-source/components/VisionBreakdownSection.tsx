@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { Text } from "@repo/ui";
-import type { VisionSourceResult } from "@repo/service";
+import type { RankerVisionBenchmark, VisionSourceResult } from "@repo/service";
 
 const Wrapper = styled.div`
   display: flex;
@@ -12,20 +12,40 @@ const SectionTitle = styled.div`
   margin-bottom: 0;
 `;
 
+const ComparisonHeader = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing[4]};
+  padding: 0 ${({ theme }) => theme.spacing[6]};
+`;
+
 const SummaryCard = styled.div`
   background-color: ${({ theme }) => theme.colors.background.surface};
   border-radius: ${({ theme }) => theme.radius.comfortable};
   padding: ${({ theme }) => theme.spacing[6]};
   border: 1px solid ${({ theme }) => theme.colors.border.subtle};
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+`;
+
+const SummaryGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing[4]};
+  align-items: end;
 `;
 
 const SummaryMain = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing[1]};
+`;
+
+const SummaryMeta = styled.div`
+  margin-top: ${({ theme }) => theme.spacing[4]};
+  padding-top: ${({ theme }) => theme.spacing[4]};
+  border-top: 1px solid ${({ theme }) => theme.colors.border.subtle};
+  display: flex;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing[4]};
 `;
 
 const DeviceGrid = styled.div`
@@ -47,11 +67,16 @@ const CardTitle = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
 `;
 
-const StatRow = styled.div`
-  display: flex;
+const ComparisonRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: ${({ theme }) => theme.spacing[3]};
   align-items: center;
-  justify-content: space-between;
   margin-bottom: ${({ theme }) => theme.spacing[3]};
+`;
+
+const ComparisonSubRow = styled(ComparisonRow)`
+  padding-left: ${({ theme }) => theme.spacing[4]};
 `;
 
 const Divider = styled.div`
@@ -60,40 +85,78 @@ const Divider = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing[3]};
 `;
 
-const SourceRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: ${({ theme }) => theme.spacing[1]};
-`;
-
-const SubRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-left: ${({ theme }) => theme.spacing[4]};
-  margin-bottom: ${({ theme }) => theme.spacing[1]};
-`;
-
-
 const fmt = (n: number) => n.toFixed(1);
 const fmtCredits = (n: number) => Math.round(n).toLocaleString();
 
 interface Props {
   data: VisionSourceResult;
+  rankerBenchmark: RankerVisionBenchmark | null;
 }
 
-export const VisionBreakdownSection = ({ data }: Props) => (
+const ComparisonValue = ({
+  value,
+  format,
+}: {
+  value: number;
+  format: (n: number) => string;
+}) => (
+  <Text variant="bodyBold">{format(value)}</Text>
+);
+
+const RankerValue = ({
+  value,
+  format,
+}: {
+  value: number | undefined;
+  format: (n: number) => string;
+}) => (
+  <Text variant="bodyBold" color="secondary">
+    {value == null ? "-" : format(value)}
+  </Text>
+);
+
+export const VisionBreakdownSection = ({ data, rankerBenchmark }: Props) => (
   <Wrapper>
     <SectionTitle>
       <Text variant="bodyBold">시야 점수 요약</Text>
     </SectionTitle>
+
+    {rankerBenchmark && (
+      <ComparisonHeader>
+        <span />
+        <Text variant="caption" color="secondary">내 평균</Text>
+        <Text variant="caption" color="secondary">
+          랭커 평균 ({rankerBenchmark.periodLabel})
+        </Text>
+      </ComparisonHeader>
+    )}
+
     <SummaryCard>
-      <SummaryMain>
-        <Text variant="caption" color="secondary">평균 시야 점수</Text>
-        <Text variant="h2">{Math.round(data.avgViewContribution).toLocaleString()}점</Text>
-      </SummaryMain>
-      <Text variant="caption" color="secondary">{data.gamesAnalyzed}게임 분석</Text>
+      <SummaryGrid>
+        <SummaryMain>
+          <Text variant="caption" color="secondary">평균 시야 점수</Text>
+        </SummaryMain>
+        <SummaryMain>
+          <Text variant="h2">{Math.round(data.avgViewContribution).toLocaleString()}점</Text>
+        </SummaryMain>
+        <SummaryMain>
+          {rankerBenchmark ? (
+            <Text variant="h2" color="secondary">
+              {Math.round(rankerBenchmark.avgViewContribution).toLocaleString()}점
+            </Text>
+          ) : (
+            <Text variant="h2" color="secondary">-</Text>
+          )}
+        </SummaryMain>
+      </SummaryGrid>
+      <SummaryMeta>
+        <Text variant="caption" color="secondary">{data.gamesAnalyzed}게임 분석</Text>
+        {rankerBenchmark && (
+          <Text variant="caption" color="secondary">
+            랭커 {rankerBenchmark.rankerCount.toLocaleString()}명 · {rankerBenchmark.gamesAnalyzed.toLocaleString()}게임
+          </Text>
+        )}
+      </SummaryMeta>
     </SummaryCard>
 
     <DeviceGrid>
@@ -101,81 +164,94 @@ export const VisionBreakdownSection = ({ data }: Props) => (
         <CardTitle>
           <Text variant="bodyBold">망원 카메라</Text>
         </CardTitle>
-        <StatRow>
+        <ComparisonRow>
           <Text variant="caption" color="secondary">설치 수</Text>
-          <Text variant="bodyBold">{fmt(data.avgTelephotoPlaced)}개</Text>
-        </StatRow>
+          <ComparisonValue value={data.avgTelephotoPlaced} format={fmt} />
+          <RankerValue value={rankerBenchmark?.avgTelephotoPlaced} format={fmt} />
+        </ComparisonRow>
         <Divider />
-        <SourceRow>
+        <ComparisonRow>
           <Text variant="caption" color="secondary">박쥐 처치</Text>
-          <Text variant="caption">{fmt(data.avgCameraFromBat)}개</Text>
-        </SourceRow>
-        <SubRow>
+          <ComparisonValue value={data.avgCameraFromBat} format={fmt} />
+          <RankerValue value={rankerBenchmark?.avgCameraFromBat} format={fmt} />
+        </ComparisonRow>
+        <ComparisonSubRow>
           <Text variant="caption" color="secondary">박쥐 {fmt(data.avgBatKills)}마리</Text>
-          <Text variant="caption" color="secondary">{fmt(data.avgBatKills)}개</Text>
-        </SubRow>
-        <SubRow>
+          <Text variant="caption">{fmt(data.avgBatKills)}개</Text>
+          <Text variant="caption" color="secondary">
+            {rankerBenchmark ? `${fmt(rankerBenchmark.avgBatKills)}개` : "-"}
+          </Text>
+        </ComparisonSubRow>
+        <ComparisonSubRow>
           <Text variant="caption" color="secondary">
             변이 박쥐 {fmt(data.avgMutantBatKills)}마리 ×2
           </Text>
+          <Text variant="caption">{fmt(data.avgMutantBatKills * 2)}개</Text>
           <Text variant="caption" color="secondary">
-            {fmt(data.avgMutantBatKills * 2)}개
+            {rankerBenchmark ? `${fmt(rankerBenchmark.avgMutantBatKills * 2)}개` : "-"}
           </Text>
-        </SubRow>
-        <SourceRow>
+        </ComparisonSubRow>
+        <ComparisonRow>
           <Text variant="caption" color="secondary">원격 구매</Text>
-          <Text variant="caption">{fmt(data.avgCameraFromPurchase)}개</Text>
-        </SourceRow>
+          <ComparisonValue value={data.avgCameraFromPurchase} format={fmt} />
+          <RankerValue value={rankerBenchmark?.avgCameraFromPurchase} format={fmt} />
+        </ComparisonRow>
       </DeviceCard>
 
       <DeviceCard>
         <CardTitle>
           <Text variant="bodyBold">정찰 드론</Text>
         </CardTitle>
-        <StatRow>
+        <ComparisonRow>
           <Text variant="caption" color="secondary">사용량</Text>
-          <Text variant="bodyBold">{fmt(data.avgReconDrone)}회</Text>
-        </StatRow>
+          <ComparisonValue value={data.avgReconDrone} format={(n) => `${fmt(n)}회`} />
+          <RankerValue value={rankerBenchmark?.avgReconDrone} format={(n) => `${fmt(n)}회`} />
+        </ComparisonRow>
         <Divider />
-        <SourceRow>
+        <ComparisonRow>
           <Text variant="caption" color="secondary">구매한 드론량</Text>
-          <Text variant="caption">{fmt(data.avgReconDroneBought)}개</Text>
-        </SourceRow>
-        <SourceRow>
+          <ComparisonValue value={data.avgReconDroneBought} format={fmt} />
+          <RankerValue value={rankerBenchmark?.avgReconDroneBought} format={fmt} />
+        </ComparisonRow>
+        <ComparisonRow>
           <Text variant="caption" color="secondary">구매 금액</Text>
-          <Text variant="caption">{fmtCredits(data.avgReconDroneBoughtCredits)}원</Text>
-        </SourceRow>
+          <ComparisonValue value={data.avgReconDroneBoughtCredits} format={(n) => `${fmtCredits(n)}원`} />
+          <RankerValue value={rankerBenchmark?.avgReconDroneBoughtCredits} format={(n) => `${fmtCredits(n)}원`} />
+        </ComparisonRow>
       </DeviceCard>
 
       <DeviceCard>
         <CardTitle>
           <Text variant="bodyBold">EMP 드론</Text>
         </CardTitle>
-        <StatRow>
+        <ComparisonRow>
           <Text variant="caption" color="secondary">사용량</Text>
-          <Text variant="bodyBold">{fmt(data.avgEmpDrone)}회</Text>
-        </StatRow>
+          <ComparisonValue value={data.avgEmpDrone} format={(n) => `${fmt(n)}회`} />
+          <RankerValue value={rankerBenchmark?.avgEmpDrone} format={(n) => `${fmt(n)}회`} />
+        </ComparisonRow>
         <Divider />
-        <SourceRow>
+        <ComparisonRow>
           <Text variant="caption" color="secondary">구매한 드론량</Text>
-          <Text variant="caption">{fmt(data.avgEmpDroneBought)}개</Text>
-        </SourceRow>
-        <SourceRow>
+          <ComparisonValue value={data.avgEmpDroneBought} format={fmt} />
+          <RankerValue value={rankerBenchmark?.avgEmpDroneBought} format={fmt} />
+        </ComparisonRow>
+        <ComparisonRow>
           <Text variant="caption" color="secondary">구매 금액</Text>
-          <Text variant="caption">{fmtCredits(data.avgEmpDroneBoughtCredits)}원</Text>
-        </SourceRow>
+          <ComparisonValue value={data.avgEmpDroneBoughtCredits} format={(n) => `${fmtCredits(n)}원`} />
+          <RankerValue value={rankerBenchmark?.avgEmpDroneBoughtCredits} format={(n) => `${fmtCredits(n)}원`} />
+        </ComparisonRow>
       </DeviceCard>
 
       <DeviceCard>
         <CardTitle>
           <Text variant="bodyBold">감시 카메라</Text>
         </CardTitle>
-        <StatRow>
+        <ComparisonRow>
           <Text variant="caption" color="secondary">설치 수</Text>
-          <Text variant="bodyBold">{fmt(data.avgSurveillanceCamera)}개</Text>
-        </StatRow>
+          <ComparisonValue value={data.avgSurveillanceCamera} format={fmt} />
+          <RankerValue value={rankerBenchmark?.avgSurveillanceCamera} format={fmt} />
+        </ComparisonRow>
       </DeviceCard>
     </DeviceGrid>
-
   </Wrapper>
 );
