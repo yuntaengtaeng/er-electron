@@ -213,6 +213,14 @@ export default function HomePage() {
             랭커 트리오 조합 1~3등 비율 분석
           </Text>
         </FeatureCard>
+        <FeatureCard onClick={() => navigate("/character-analysis")}>
+          <FeatureCardTitle>
+            <Text variant="bodyBold">실험체 분석</Text>
+          </FeatureCardTitle>
+          <Text variant="caption" color="secondary">
+            랭커 기준 픽률·승률·빌드 통계
+          </Text>
+        </FeatureCard>
       </FeatureGrid>
 
       {clubMembers.length > 0 && (

@@ -9,6 +9,7 @@ import { VisionSourcePage } from "../features/vision-source";
 import { PhaseCombatPage } from "../features/phase-combat";
 import { RankerDataPage } from "../features/ranker-data";
 import { TeamComboPage } from "../features/team-combo";
+import { CharacterAnalysisPage } from "../features/character-analysis";
 
 export function Router() {
   return (
@@ -21,6 +22,7 @@ export function Router() {
       <Route path="/vision-source" element={<VisionSourcePage />} />
       <Route path="/phase-combat" element={<PhaseCombatPage />} />
       <Route path="/team-combo" element={<TeamComboPage />} />
+      <Route path="/character-analysis" element={<CharacterAnalysisPage />} />
       <Route path="/ranker-data" element={<RankerDataPage />} />
       <Route path="/ui-guide" element={<UIGuidePage />} />
     </Routes>

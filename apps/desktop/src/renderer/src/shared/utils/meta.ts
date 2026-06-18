@@ -6,6 +6,7 @@ import tiersData from "../constants/ko-json/tiers.json";
 import monstersData from "../constants/ko-json/monsters.json";
 import traitSkillGroupsData from "../constants/ko-json/traitSkillGroups.json";
 import tacticalSkillsData from "../constants/ko-json/tacticalSkills.json";
+import skillsData from "../constants/ko-json/skills.json";
 import creditSourcesData from "../constants/ko-json/credit-sources.json";
 import seasonsData from "../constants/ko-json/seasons.json";
 
@@ -33,6 +34,39 @@ export const getCharacterByKey = (key: string) =>
   characterByKey.get(key) ?? null;
 export const getAllCharacters = () => charactersData.characters;
 export const getItemById = (id: number) => itemById.get(id) ?? null;
+
+export type ItemGrade =
+  | 'Common'
+  | 'Uncommon'
+  | 'Rare'
+  | 'Epic'
+  | 'Legend'
+  | 'Mythic'
+
+const GRADE_ORDER: ItemGrade[] = [
+  'Common',
+  'Uncommon',
+  'Rare',
+  'Epic',
+  'Legend',
+  'Mythic',
+]
+
+export const getItemGrade = (id: number): ItemGrade | null => {
+  const item = getItemById(id)
+  const grade = (item as { grade?: string } | null)?.grade
+  if (!grade || !GRADE_ORDER.includes(grade as ItemGrade)) return null
+  return grade as ItemGrade
+}
+
+export const isItemGradeAtLeast = (id: number, minGrade: ItemGrade): boolean => {
+  const grade = getItemGrade(id)
+  if (!grade) return false
+  return GRADE_ORDER.indexOf(grade) >= GRADE_ORDER.indexOf(minGrade)
+}
+
+export const isItemGradeEqual = (id: number, grade: ItemGrade): boolean =>
+  getItemGrade(id) === grade
 export const getMasteryByKey = (key: string) => masteryByKey.get(key) ?? null;
 export const getMasteryById = (id: number) => masteryById.get(id) ?? null;
 export const getAreaByKey = (key: string) => areaByKey.get(key) ?? null;
@@ -114,3 +148,64 @@ export const calcItemCredits = (equipment: Record<string, number>): number =>
       const mat2 = (item as { makeMaterial2?: number } | null)?.makeMaterial2;
       return sum + (mat2 !== undefined ? (MATERIAL_PRICES[mat2] ?? 0) : 0);
     }, 0);
+
+type SkillEntry = {
+  id: number
+  name: string
+  slot: string
+  imageUrl?: string
+  characterId?: number
+  characterIds?: number[]
+}
+
+const SKILL_BAR_SLOTS = ['Q', 'W', 'E', 'R', 'T', 'D'] as const
+
+export type CharacterSkillSlot = {
+  slot: string
+  name: string
+  imageUrl: string
+  isWeapon: boolean
+}
+
+export const getCharacterCommunityImageUrl = (characterId: number): string | null => {
+  const char = getCharacterById(characterId)
+  const url =
+    (char as { communityImageUrl?: string } | null)?.communityImageUrl ?? char?.imageUrl
+  return url ? normalizeImageUrl(url) : null
+}
+
+export const getCharacterPrimaryWeaponName = (characterId: number): string => {
+  const char = getCharacterById(characterId)
+  const key = (char as { masteries?: string[] } | null)?.masteries?.[0]
+  if (!key) return ''
+  return getMasteryByKey(key)?.name ?? ''
+}
+
+export const getCharacterSkillBar = (characterId: number): CharacterSkillSlot[] => {
+  const skills = skillsData.skills as SkillEntry[]
+  const bySlot = new Map<string, SkillEntry>()
+
+  for (const skill of skills) {
+    if (skill.characterId === characterId) {
+      bySlot.set(skill.slot, skill)
+    }
+  }
+
+  const weaponSkill = skills.find(
+    (skill) => skill.slot === 'D' && skill.characterIds?.includes(characterId),
+  )
+  if (weaponSkill) bySlot.set('D', weaponSkill)
+
+  return SKILL_BAR_SLOTS.flatMap((slot) => {
+    const skill = bySlot.get(slot)
+    if (!skill?.imageUrl) return []
+    return [
+      {
+        slot,
+        name: skill.name,
+        imageUrl: normalizeImageUrl(skill.imageUrl),
+        isWeapon: slot === 'D',
+      },
+    ]
+  })
+}
