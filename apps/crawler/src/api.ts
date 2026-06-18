@@ -37,5 +37,7 @@ export const createClient = (apiKey: string) => {
       request(() => client.getUserByNickname(nickname)),
     getUserGamesByUserId: (userId: string, next?: number) =>
       request(() => client.getUserGamesByUserId(userId, next)),
+    getGame: (gameId: number) =>
+      request(() => client.getGame(gameId)),
   };
 };

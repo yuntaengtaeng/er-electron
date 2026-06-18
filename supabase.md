@@ -249,7 +249,61 @@ ALTER TABLE kill_matchups DISABLE ROW LEVEL SECURITY;
 CREATE INDEX IF NOT EXISTS idx_kill_matchups_killer ON kill_matchups(killer_char_num);
 ```
 
-**버전 프루닝**: 크롤러 실행 시 `version_major` 기준 최근 2개 패치만 유지. 오래된 버전 삭제 시 `kill_matchups` → `games` 순서로 삭제.
+**버전 프루닝**: 크롤러 실행 시 `version_major` 기준 최근 2개 패치만 유지. 오래된 버전 삭제 시 `game_teams` → `kill_matchups` → `games` 순서로 삭제.
+
+---
+
+### `game_teams`
+
+랭커가 참여한 판의 `game_id`를 기준으로 `getGame` 1회 조회 후, 그 판의 **1~8등 팀별** 실험체 조합을 저장. 홈 **조합 승률 보기** 데이터 소스.
+
+```sql
+CREATE TABLE IF NOT EXISTS game_teams (
+  game_id         BIGINT NOT NULL,
+  team_rank       INTEGER NOT NULL,       -- 1~8등 (팀 순위)
+  version_major   INTEGER,
+  start_dtm       TEXT,
+  character_nums  JSONB NOT NULL,         -- 정렬된 실험체 ID 배열 [a, b, c]
+  team_kills      INTEGER,
+  team_assists    INTEGER,
+  team_mmr_gain   INTEGER,
+  is_premade      BOOLEAN DEFAULT FALSE,
+  members         JSONB,                  -- [{ character_num, player_kill, player_assistant, mmr_gain }, ...]
+  PRIMARY KEY (game_id, team_rank)
+);
+
+ALTER TABLE game_teams DISABLE ROW LEVEL SECURITY;
+
+CREATE INDEX IF NOT EXISTS idx_game_teams_version ON game_teams(version_major);
+```
+
+**수집 흐름**
+1. 랭커 `getUserGames` → 고유 `game_id` 수집 + `games`/`kill_matchups` 저장
+2. `game_teams`에 없는 `game_id`만 `getGame` 호출 (재수집 시 스킵)
+3. 응답에서 팀별(`teamNumber`)로 묶어 최대 8행 upsert
+
+**마이그레이션** (기존 DB):
+
+```sql
+CREATE TABLE IF NOT EXISTS game_teams (
+  game_id         BIGINT NOT NULL,
+  team_rank       INTEGER NOT NULL,
+  version_major   INTEGER,
+  start_dtm       TEXT,
+  character_nums  JSONB NOT NULL,
+  team_kills      INTEGER,
+  team_assists    INTEGER,
+  team_mmr_gain   INTEGER,
+  is_premade      BOOLEAN DEFAULT FALSE,
+  members         JSONB,
+  PRIMARY KEY (game_id, team_rank)
+);
+
+ALTER TABLE game_teams DISABLE ROW LEVEL SECURITY;
+CREATE INDEX IF NOT EXISTS idx_game_teams_version ON game_teams(version_major);
+```
+
+> `games.team_members`는 더 이상 사용하지 않음. 크롤러 재실행 후 `game_teams`에 데이터가 쌓입니다.
 
 ---
 

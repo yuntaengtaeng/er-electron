@@ -1,6 +1,6 @@
 import path from 'path';
 import dotenv from 'dotenv';
-import { createSupabaseClient, writeStatus } from './supabase';
+import { createSupabaseClient, resetCrawlStatusToIdle, writeStatus } from './supabase';
 import { collect } from './collect';
 
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
@@ -16,6 +16,22 @@ if (!apiKey || !supabaseUrl || !supabaseServiceKey) {
 }
 
 const supabase = createSupabaseClient(supabaseUrl, supabaseServiceKey);
+
+let isShuttingDown = false;
+
+const shutdownToIdle = (signal: 'SIGTERM' | 'SIGINT') => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+
+  console.log(`[crawler] ${signal} 수신 — crawl_status를 idle로 복구`);
+
+  resetCrawlStatusToIdle(supabase)
+    .catch((err) => console.error('[crawler] idle 복구 실패:', err))
+    .finally(() => process.exit(signal === 'SIGINT' ? 130 : 143));
+};
+
+process.once('SIGTERM', () => shutdownToIdle('SIGTERM'));
+process.once('SIGINT', () => shutdownToIdle('SIGINT'));
 
 const main = async () => {
   try {
