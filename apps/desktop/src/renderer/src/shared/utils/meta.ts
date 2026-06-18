@@ -31,6 +31,7 @@ const tacticalSkillById = new Map(
 export const getCharacterById = (id: number) => characterById.get(id) ?? null;
 export const getCharacterByKey = (key: string) =>
   characterByKey.get(key) ?? null;
+export const getAllCharacters = () => charactersData.characters;
 export const getItemById = (id: number) => itemById.get(id) ?? null;
 export const getMasteryByKey = (key: string) => masteryByKey.get(key) ?? null;
 export const getMasteryById = (id: number) => masteryById.get(id) ?? null;
