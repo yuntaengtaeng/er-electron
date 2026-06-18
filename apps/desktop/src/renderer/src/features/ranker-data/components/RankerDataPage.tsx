@@ -1,9 +1,10 @@
 import styled, { css } from 'styled-components'
-import { Text } from '@repo/ui'
+import { Button, Text } from '@repo/ui'
 import { AppHeader } from '../../../shared/components/AppHeader'
 import { useRankerData } from '../hooks/useRankerData'
 import type { TabKey } from '../hooks/useRankerData'
 import { currentSeasonDisplayVersion } from '../../../shared/utils/meta'
+import { downloadCsv, rowsToCsv } from '../../../shared/utils/csv'
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -39,10 +40,17 @@ const Chip = styled.span`
   padding: ${({ theme }) => theme.spacing[1]} ${({ theme }) => theme.spacing[3]};
 `
 
+const TabHeader = styled.div`
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing[4]};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
+`
+
 const TabRow = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.spacing[1]};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
 `
 
 const TabButton = styled.button<{ $active: boolean }>`
@@ -173,6 +181,20 @@ const TAB_LABELS: Record<TabKey, string> = {
   matchups: '킬 매치업',
 }
 
+const TAB_FILE_PREFIX: Record<TabKey, string> = {
+  rankers: 'rankers',
+  games: 'games',
+  matchups: 'kill_matchups',
+}
+
+const formatExportDate = (): string => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
 export default function RankerDataPage() {
   const { tab, setTab, rankers, versions, games, matchups, loading, gamesLoading, matchupsLoading, error } = useRankerData()
 
@@ -194,6 +216,17 @@ export default function RankerDataPage() {
     games: gamesLoading,
     matchups: matchupsLoading,
   }
+
+  const currentRows = tabRows[tab];
+  const isCurrentTabLoading = tabLoading[tab];
+  const canExportCsv = !isCurrentTabLoading && currentRows.length > 0;
+
+  const handleCsvDownload = () => {
+    if (!canExportCsv) return;
+    const csv = rowsToCsv(currentRows);
+    const filename = `${TAB_FILE_PREFIX[tab]}_${formatExportDate()}.csv`;
+    downloadCsv(filename, csv);
+  };
 
   return (
     <PageWrapper>
@@ -223,16 +256,21 @@ export default function RankerDataPage() {
 
         {!error && (
           <>
-            <TabRow>
-              {(Object.keys(TAB_LABELS) as TabKey[]).map((t) => (
-                <TabButton key={t} $active={tab === t} onClick={() => setTab(t)}>
-                  {TAB_LABELS[t]}
-                  {t === 'rankers' && !loading && ` (${rankers.length})`}
-                  {t === 'games' && !gamesLoading && games.length > 0 && ` (${games.length})`}
-                  {t === 'matchups' && !matchupsLoading && matchups.length > 0 && ` (${matchups.length})`}
-                </TabButton>
-              ))}
-            </TabRow>
+            <TabHeader>
+              <TabRow>
+                {(Object.keys(TAB_LABELS) as TabKey[]).map((t) => (
+                  <TabButton key={t} $active={tab === t} onClick={() => setTab(t)}>
+                    {TAB_LABELS[t]}
+                    {t === 'rankers' && !loading && ` (${rankers.length})`}
+                    {t === 'games' && !gamesLoading && games.length > 0 && ` (${games.length})`}
+                    {t === 'matchups' && !matchupsLoading && matchups.length > 0 && ` (${matchups.length})`}
+                  </TabButton>
+                ))}
+              </TabRow>
+              <Button variant="outlined" onClick={handleCsvDownload} disabled={!canExportCsv}>
+                CSV 다운로드
+              </Button>
+            </TabHeader>
 
             <RawTable rows={tabRows[tab]} loading={tabLoading[tab]} />
           </>
