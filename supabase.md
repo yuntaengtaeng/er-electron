@@ -206,6 +206,7 @@ CREATE TABLE games (
   place_of_death            TEXT,
   killer_character          TEXT,
   killer_weapon             TEXT,
+  death_details             TEXT,          -- UserGame.deathDetails (캐릭터별 사망 상세, 실험체 분석 killedMe용)
   route_id_of_start         INTEGER,
   use_hyper_loop            INTEGER,
   total_gain_vf_credit      INTEGER,
@@ -250,6 +251,14 @@ CREATE INDEX IF NOT EXISTS idx_kill_matchups_killer ON kill_matchups(killer_char
 ```
 
 **버전 프루닝**: 크롤러 실행 시 `version_major` 기준 최근 2개 패치만 유지. 오래된 버전 삭제 시 `game_teams` → `kill_matchups` → `games` 순서로 삭제.
+
+**실험체 분석 조회**: 앱은 `matching_team_mode = 3`(트리오 랭크)만 필터. RP는 `game_teams.members[].mmr_gain`을 `game_id` + `character_num`으로 조인.
+
+**마이그레이션** (`death_details` 추가 — 기존 DB):
+
+```sql
+ALTER TABLE games ADD COLUMN IF NOT EXISTS death_details TEXT;
+```
 
 ---
 
@@ -364,3 +373,8 @@ apps/desktop/src/renderer/src/main.tsx
 **홈 랭킹** (HomePage → ClubRankingSection)
 1. `getAllClubMembers()` → `club_members` 전체를 `mmr DESC`로 조회
 2. 티어 색상 + 아바타 카드 형태로 표시
+
+**실험체 분석** (CharacterAnalysisPage)
+1. `getCharacterAnalysis(characterNum, getWeaponType, calcCredits)` — Supabase 랭커 풀 집계
+2. `getPlayerCharacterWeaponStats(nickname, ...)` — BSER API 트리오 랭크 전적 비교
+3. RP 순위별 값: `game_teams.members.mmr_gain`을 `games.game_rank`별 평균

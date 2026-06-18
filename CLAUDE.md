@@ -151,6 +151,10 @@ crawl_status  (id=1, status: 'idle'|'collecting'|'error', started_at, completed_
 - `getCollectedVersions()` — games 테이블에서 distinct version_major 목록 (DESC)
 - `getCrawlStatus()` — crawl_status 테이블 단일 행 조회
 - `getMemberByNickname / upsertMember / getAllMembers` — 클럽 멤버 CRUD
+- `getGamesByCharacter(characterNum)` — 트리오 랭크(`matching_team_mode = 3`) 게임 중 해당 실험체 행 조회 (실험체 분석용)
+- `getTrioRankGameCount()` — 트리오 랭크 전체 판 수 (픽률 분모)
+- `getGameTeamMmrLookup()` — `game_teams.members` 전체 조회 → RP(`mmr_gain`) lookup
+- `getKillMatchupsForCharacter(characterNum)` — 해당 실험체가 킬한 상대 집계 (`game_id` 포함, 무기별 필터용)
 
 ## 크롤러 (apps/crawler)
 
@@ -216,6 +220,12 @@ apps/desktop/src/renderer/src/
 │   ├── ranker-data/
 │   │   ├── components/  # RankerDataPage (수집된 랭커 테이블)
 │   │   ├── hooks/       # useRankerData
+│   │   └── index.ts
+│   ├── character-analysis/
+│   │   ├── components/  # CharacterAnalysisPage, CharacterProfileHeader,
+│   │   │                # SummaryStatsSection, CharacterCompareSection,
+│   │   │                # TraitGroupsSection, WeaponBuildSection, ...
+│   │   ├── hooks/       # useCharacterAnalysis, useCharacterCompare
 │   │   └── index.ts
 │   └── ui-guide/
 │       ├── components/  # UIGuidePage
@@ -303,10 +313,28 @@ MATERIAL_PRICES                       // Epic 재료 ID → 키오스크 가격 
 // 버전 표기
 currentSeasonDisplayVersion           // seasons.json의 현재 시즌 번호 (e.g. "11")
 // 패치 버전 표기: `v${currentSeasonDisplayVersion}.${game.versionMajor}` → "v11.4"
+
+// 실험체 분석 프로필
+getCharacterPrimaryWeaponName(id)     // characters.json masteries[0] → 한글 무기명
+getCharacterCommunityImageUrl(id)     // dak.gg 커뮤니티 초상화 URL
+getCharacterSkillBar(id)              // Q/W/E/R/T/D 스킬 아이콘 목록
+getItemGrade(id)                      // items.json grade (Epic/Legend/Mythic 등)
 ```
 
 - **`masteryLevel` API 필드 주의**: `UserGame.masteryLevel` 키는 영어 key("Bat")가 아닌 숫자 코드 혼재 — 무기 종류 판별에 사용 금지. 대신 `equipment["0"]`(무기 슬롯) → `getWeaponTypeFromEquipment` 사용
 - CSP `img-src`에 `https://cdn.dak.gg` 허용 추가됨 (csp.ts)
+
+### 실험체 분석 (`features/character-analysis`)
+
+수집된 랭커 **트리오 랭크** 전적(`matching_team_mode = 3`) 기준으로 실험체별 메타·빌드·교전 통계를 보여준다.
+
+- **서비스**: `@repo/service` — `getCharacterAnalysis`, `getPlayerCharacterWeaponStats`, `weaponGroupToCompareSide`
+- **집계**: `character-analysis-utils.ts` — 무기 타입(`getWeaponType` 콜백)별로 승률·RP·특성·전술 스킬·빌드·교전을 분리 집계
+- **무기 선택**: `CharacterProfileHeader` 탭 — 선택 무기 기준으로 모든 지표가 바뀜 (무기 2개 이상일 때만 탭 표시)
+- **RP 획득**: `game_teams.members[].mmr_gain` (API `UserGame.mmrGain`)을 `game_rank`별 평균 → `mmrByPlacement`
+- **나와 비교하기**: 동일 실험체·무기·트리오 랭크 최근 전적 vs 랭커 풀 — 지표 테이블 + 순위별 RP 막대 그래프
+- **아이템 등급 필터**: Epic / Legend / Mythic만 (정확히 해당 등급). `getItemGrade` + `ITEM_GRADE_FILTERS`
+- **피해자 분석**: `games.death_details` (크롤러 `deathDetails` 수집) + `kill_matchups` (`game_id`로 무기별 필터)
 
 #### 역할 분리 원칙
 - **hook (`hooks/`)**: 데이터 fetch, 상태 관리, 파생값 계산 — JSX 없음
