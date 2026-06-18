@@ -373,6 +373,7 @@ const gameToRow = (g: UserGame, userId: string) => ({
   place_of_death: g.placeOfDeath,
   killer_character: g.killerCharacter,
   killer_weapon: g.killerWeapon,
+  death_details: g.deathDetails,
   route_id_of_start: g.routeIdOfStart,
   use_hyper_loop: g.useHyperLoop,
   total_gain_vf_credit: g.totalGainVFCredit,
