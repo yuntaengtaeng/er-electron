@@ -87,6 +87,15 @@ export const getAllGames = async (): Promise<Record<string, unknown>[]> => {
   return (data ?? []) as Record<string, unknown>[]
 }
 
+export const getGamesSince = async (sinceIso: string): Promise<Record<string, unknown>[]> => {
+  const { data, error } = await getClient()
+    .from('games')
+    .select('*')
+    .gte('start_dtm', sinceIso)
+  if (error) throw error
+  return (data ?? []) as Record<string, unknown>[]
+}
+
 export const getAllKillMatchups = async (): Promise<Record<string, unknown>[]> => {
   const { data, error } = await getClient()
     .from('kill_matchups')
@@ -94,6 +103,38 @@ export const getAllKillMatchups = async (): Promise<Record<string, unknown>[]> =
     .order('game_id', { ascending: false })
   if (error) throw error
   return (data ?? []) as Record<string, unknown>[]
+}
+
+export type TeamMemberSnapshot = {
+  character_num: number
+  player_kill: number
+  player_assistant: number
+  mmr_gain: number
+}
+
+export type GameTeamComboRow = {
+  game_id: number
+  team_rank: number
+  character_nums: number[]
+  members: TeamMemberSnapshot[]
+}
+
+export const getGameTeamsForCombos = async (): Promise<GameTeamComboRow[]> => {
+  const { data, error } = await getClient()
+    .from('game_teams')
+    .select('game_id, team_rank, character_nums, members')
+
+  if (error) throw error
+
+  return (data ?? []).map((row) => {
+    const r = row as Row
+    return {
+      game_id: r.game_id as number,
+      team_rank: r.team_rank as number,
+      character_nums: (r.character_nums as number[]) ?? [],
+      members: (r.members as TeamMemberSnapshot[]) ?? [],
+    }
+  })
 }
 
 export const getCollectedVersions = async (): Promise<number[]> => {

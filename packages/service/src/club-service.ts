@@ -7,7 +7,9 @@ import {
   getRankers,
   getCollectedVersions,
   getAllGames,
+  getGamesSince,
   getAllKillMatchups,
+  getGameTeamsForCombos,
   logCompareSearch,
   getPopularCompareNicknames,
 } from '@repo/club-store'
@@ -20,5 +22,5 @@ export const initClubService = (supabaseUrl: string, supabaseAnonKey: string): v
 export type { ClubMember, CrawlStatusRow, RankerRow }
 export { getMemberByNickname, upsertMember, getAllMembers as getAllClubMembers }
 export { getCrawlStatus }
-export { getRankers, getCollectedVersions, getAllGames, getAllKillMatchups }
+export { getRankers, getCollectedVersions, getAllGames, getGamesSince, getAllKillMatchups, getGameTeamsForCombos }
 export { logCompareSearch, getPopularCompareNicknames }

@@ -5,8 +5,10 @@ export { getCompareStats } from "./compare-service";
 export type { ComparePlayerStats } from "./compare-service";
 export { getItemAnalysis } from "./item-analysis-service";
 export type { ItemAnalysisResult, CharacterItemAnalysis, WeaponTypeAnalysis, SlotItemStat } from "./item-analysis-service";
-export { getVisionSource } from "./vision-source-service";
-export type { VisionSourceResult, GameDetail } from "./vision-source-service";
+export { getVisionSource, getRankerVisionBenchmark } from "./vision-source-service";
+export type { VisionSourceResult, VisionStatsSummary, RankerVisionBenchmark, GameDetail } from "./vision-source-service";
 export { getPhaseCombat } from "./phase-combat-service";
 export type { PhaseCombatResult, CombatGame, AreaDeathStat } from "./phase-combat-service";
+export { getTeamCombos, getTeamComboRows, aggregateTeamCombos } from "./team-combo-service";
+export type { TeamComboRow, TeamComboSize, TeamComboSort, GameTeamComboRow } from "./team-combo-service";
 
