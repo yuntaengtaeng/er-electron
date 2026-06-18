@@ -11,4 +11,8 @@ export { getPhaseCombat } from "./phase-combat-service";
 export type { PhaseCombatResult, CombatGame, AreaDeathStat } from "./phase-combat-service";
 export { getTeamCombos, getTeamComboRows, aggregateTeamCombos } from "./team-combo-service";
 export type { TeamComboRow, TeamComboSize, TeamComboSort, GameTeamComboRow } from "./team-combo-service";
+export { getCharacterAnalysis } from "./character-analysis-service";
+export type { CharacterAnalysisResult, PickWinRow, SlotItemStats, TraitCoreGroup, TraitSubComboRow, FinalBuildRow, KillVsRow, WeaponTypeGroup, WeaponTypeSummary, MmrByPlacement } from "./character-analysis-service";
+export { getPlayerCharacterWeaponStats, weaponGroupToCompareSide } from "./character-compare-service";
+export type { CharacterCompareSide, SlotItemPick } from "./character-compare-service";
 
