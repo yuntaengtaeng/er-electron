@@ -1,5 +1,5 @@
 export { initClubStore } from './client'
 export type { ClubMember } from './types'
-export { getMemberByNickname, upsertMember, getAllMembers, getCrawlStatus, getRankers, getCollectedVersions, getAllGames, getGamesSince, getAllKillMatchups, getGameTeamsForCombos } from './operations'
-export type { CrawlStatusRow, RankerRow, GameTeamComboRow, TeamMemberSnapshot } from './operations'
+export { getMemberByNickname, upsertMember, getAllMembers, getCrawlStatus, getRankers, getCollectedVersions, getAllGames, getGamesSince, getAllKillMatchups, getGameTeamsForCombos, getGamesByCharacter, getTrioRankGameCount, getGameTeamMmrLookup, getKillMatchupsForCharacter } from './operations'
+export type { CrawlStatusRow, RankerRow, GameTeamComboRow, TeamMemberSnapshot, CharacterGameRow } from './operations'
 export { logCompareSearch, getPopularCompareNicknames } from './compare-operations'
