@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import styled, { css } from 'styled-components'
 import { Text } from '@repo/ui'
 import type { TeamComboRow, TeamComboSize, TeamComboSort } from '@repo/service'
+import { computeTeamComboDetail } from '@repo/service'
 import { getCharacterById, normalizeImageUrl } from '../../../shared/utils/meta'
 import { useTeamCombos } from '../hooks/useTeamCombos'
 import { CharacterFilter } from './CharacterFilter'
+import { TeamComboDetailPanel } from './TeamComboDetailPanel'
 
 const ControlRow = styled.div`
   display: flex;
@@ -54,16 +56,19 @@ const ListHeader = styled.div`
   background-color: ${({ theme }) => theme.colors.background.elevated};
 `
 
-const ListRow = styled.div`
+const ListRow = styled.div<{ $selected: boolean }>`
   display: grid;
   grid-template-columns: ${GRID_COLS};
   gap: ${({ theme }) => theme.spacing[4]};
   align-items: center;
   padding: ${({ theme }) => theme.spacing[4]} ${({ theme }) => theme.spacing[5]};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border.subtle};
+  cursor: pointer;
+  background-color: ${({ $selected, theme }) =>
+    $selected ? theme.colors.background.elevated : 'transparent'};
 
-  &:last-child {
-    border-bottom: none;
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.background.elevated};
   }
 `
 
@@ -93,7 +98,10 @@ const CharImg = styled.img`
 `
 
 const StatCell = styled.div`
-  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: ${({ theme }) => theme.spacing[0.5]};
 `
 
 const RankRatesCell = styled.div`
@@ -120,6 +128,28 @@ const EmptyBox = styled.div`
   padding: ${({ theme }) => theme.spacing[12]} ${({ theme }) => theme.spacing[5]};
   text-align: center;
 `
+
+const PaginationRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing[4]};
+  margin-top: ${({ theme }) => theme.spacing[4]};
+`
+
+const PageButton = styled.button<{ $disabled: boolean }>`
+  ${({ theme }) => css(theme.typography.styles.captionBold)}
+  padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[4]};
+  border: 1px solid ${({ theme }) => theme.colors.border.subtle};
+  border-radius: ${({ theme }) => theme.radius.subtle};
+  background-color: ${({ theme }) => theme.colors.background.card};
+  color: ${({ $disabled, theme }) =>
+    $disabled ? theme.colors.text.secondary : theme.colors.text.primary};
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+  pointer-events: ${({ $disabled }) => ($disabled ? 'none' : 'auto')};
+`
+
+const PAGE_SIZE = 20
 
 const SIZE_TABS: { key: TeamComboSize; label: string }[] = [
   { key: 2, label: '2인 조합' },
@@ -177,16 +207,22 @@ const RankRates = ({ combo }: { combo: TeamComboRow }) => (
   </RankRatesCell>
 )
 
+const comboRowKey = (nums: number[]) => [...nums].sort((a, b) => a - b).join('-')
+
 const ComboRow = ({
   combo,
   rank,
   highlightId,
+  selected,
+  onClick,
 }: {
   combo: TeamComboRow
   rank: number
   highlightId: number | null
+  selected: boolean
+  onClick: () => void
 }) => (
-  <ListRow>
+  <ListRow $selected={selected} onClick={onClick}>
     <Text variant="caption" color="secondary">{rank}</Text>
     <ComboCharacters characterNums={combo.characterNums} highlightId={highlightId} />
     <RankRates combo={combo} />
@@ -200,6 +236,7 @@ const ComboRow = ({
     </AvgCell>
     <StatCell>
       <Text variant="bodyBold">{combo.games}</Text>
+      <Text variant="caption" color="secondary">{combo.pickRate.toFixed(1)}%</Text>
     </StatCell>
   </ListRow>
 )
@@ -208,13 +245,30 @@ export const TeamComboContent = () => {
   const [size, setSize] = useState<TeamComboSize>(2)
   const [sort, setSort] = useState<TeamComboSort>('rank1Rate')
   const [characterFilter, setCharacterFilter] = useState<number | null>(null)
-  const { combos, loading, error } = useTeamCombos(size, sort, characterFilter)
+  const [page, setPage] = useState(1)
+  const [selectedKey, setSelectedKey] = useState<string | null>(null)
+  const { combos, rows, loading, error } = useTeamCombos(size, sort, characterFilter)
+
+  const totalPages = Math.max(1, Math.ceil(combos.length / PAGE_SIZE))
+  const safePage = Math.min(page, totalPages)
+  const pageStart = (safePage - 1) * PAGE_SIZE
+  const visible = combos.slice(pageStart, pageStart + PAGE_SIZE)
+
+  const selectedDetail = useMemo(() => {
+    if (!selectedKey) return null
+    const nums = selectedKey.split('-').map(Number)
+    return computeTeamComboDetail(rows, nums)
+  }, [selectedKey, rows])
+
+  const handleSizeChange = (next: TeamComboSize) => { setSize(next); setPage(1); setSelectedKey(null) }
+  const handleSortChange = (next: TeamComboSort) => { setSort(next); setPage(1); setSelectedKey(null) }
+  const handleFilterChange = (next: number | null) => { setCharacterFilter(next); setPage(1); setSelectedKey(null) }
 
   return (
     <>
       <CharacterFilter
         selectedId={characterFilter}
-        onSelect={setCharacterFilter}
+        onSelect={handleFilterChange}
       />
 
       <ControlRow>
@@ -223,7 +277,7 @@ export const TeamComboContent = () => {
             <FilterButton
               key={tab.key}
               $active={size === tab.key}
-              onClick={() => setSize(tab.key)}
+              onClick={() => handleSizeChange(tab.key)}
             >
               {tab.label}
             </FilterButton>
@@ -234,7 +288,7 @@ export const TeamComboContent = () => {
             <FilterButton
               key={tab.key}
               $active={sort === tab.key}
-              onClick={() => setSort(tab.key)}
+              onClick={() => handleSortChange(tab.key)}
             >
               {tab.label}
             </FilterButton>
@@ -248,7 +302,7 @@ export const TeamComboContent = () => {
           <Text variant="captionBold" color="secondary">조합</Text>
           <Text variant="captionBold" color="secondary">TOP3 비율</Text>
           <StatCell><Text variant="captionBold" color="secondary">평균</Text></StatCell>
-          <StatCell><Text variant="captionBold" color="secondary">판</Text></StatCell>
+          <StatCell><Text variant="captionBold" color="secondary">판 / 픽률</Text></StatCell>
         </ListHeader>
 
         {loading && (
@@ -273,15 +327,47 @@ export const TeamComboContent = () => {
           </EmptyBox>
         )}
 
-        {!loading && !error && combos.map((combo, index) => (
-          <ComboRow
-            key={combo.characterNums.join('-')}
-            combo={combo}
-            rank={index + 1}
-            highlightId={characterFilter}
-          />
-        ))}
+        {!loading && !error && visible.map((combo, index) => {
+          const key = comboRowKey(combo.characterNums)
+          const isSelected = selectedKey === key
+          return (
+            <Fragment key={key}>
+              <ComboRow
+                combo={combo}
+                rank={pageStart + index + 1}
+                highlightId={characterFilter}
+                selected={isSelected}
+                onClick={() => setSelectedKey(isSelected ? null : key)}
+              />
+              {isSelected && selectedDetail && (
+                <TeamComboDetailPanel detail={selectedDetail} />
+              )}
+            </Fragment>
+          )
+        })}
       </ListCard>
+
+      {!loading && !error && totalPages > 1 && (
+        <PaginationRow>
+          <PageButton
+            type="button"
+            $disabled={safePage === 1}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            이전
+          </PageButton>
+          <Text variant="caption" color="secondary">
+            {safePage} / {totalPages}
+          </Text>
+          <PageButton
+            type="button"
+            $disabled={safePage === totalPages}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            다음
+          </PageButton>
+        </PaginationRow>
+      )}
     </>
   )
 }

@@ -25,5 +25,5 @@ export const useTeamCombos = (
     [rows, size, sort, characterNum],
   )
 
-  return { combos, loading, error }
+  return { combos, rows, loading, error }
 }
