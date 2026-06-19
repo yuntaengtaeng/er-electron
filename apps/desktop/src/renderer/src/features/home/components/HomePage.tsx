@@ -35,6 +35,21 @@ const NavRight = styled.div`
   gap: ${({ theme }) => theme.spacing[2]};
 `;
 
+const VersionBadge = styled.button`
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.colors.text.secondary};
+  ${({ theme }) => css(theme.typography.styles.caption)}
+  cursor: pointer;
+  padding: ${({ theme }) => theme.spacing[1]} ${({ theme }) => theme.spacing[2]};
+  border-radius: ${({ theme }) => theme.radius.subtle};
+  transition: color 0.15s;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.text.primary};
+  }
+`;
+
 const HeroSection = styled.section`
   display: flex;
   flex-direction: column;
@@ -143,6 +158,9 @@ export default function HomePage() {
       <NavBar>
         <Logo onClick={() => navigate("/")}>ER STATS</Logo>
         <NavRight>
+          <VersionBadge onClick={() => navigate("/patch-notes")}>
+            v{APP_VERSION}
+          </VersionBadge>
           <Button variant="outlined" onClick={() => navigate("/ranker-data")}>
             랭커 데이터
           </Button>

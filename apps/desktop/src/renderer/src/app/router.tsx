@@ -10,6 +10,7 @@ import { PhaseCombatPage } from "../features/phase-combat";
 import { RankerDataPage } from "../features/ranker-data";
 import { TeamComboPage } from "../features/team-combo";
 import { CharacterAnalysisPage } from "../features/character-analysis";
+import { PatchNotesPage, PatchNotesDetailPage } from "../features/patch-notes";
 
 export function Router() {
   return (
@@ -25,6 +26,8 @@ export function Router() {
       <Route path="/character-analysis" element={<CharacterAnalysisPage />} />
       <Route path="/ranker-data" element={<RankerDataPage />} />
       <Route path="/ui-guide" element={<UIGuidePage />} />
+      <Route path="/patch-notes" element={<PatchNotesPage />} />
+      <Route path="/patch-notes/:version" element={<PatchNotesDetailPage />} />
     </Routes>
   );
 }
