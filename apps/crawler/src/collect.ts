@@ -25,6 +25,9 @@ type GameTeamRow = {
     player_kill: number;
     player_assistant: number;
     mmr_gain: number;
+    damage_to_player: number;
+    damage_from_player: number;
+    play_time: number;
   }[];
 };
 
@@ -244,6 +247,9 @@ const parseGameTeams = (all: UserGame[]): GameTeamRow[] => {
         player_kill: m.playerKill,
         player_assistant: m.playerAssistant,
         mmr_gain: m.mmrGain,
+        damage_to_player: m.damageToPlayer,
+        damage_from_player: m.damageFromPlayer,
+        play_time: m.playTime,
       })),
     });
   }

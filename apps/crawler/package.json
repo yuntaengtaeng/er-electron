@@ -1,6 +1,6 @@
 {
   "name": "@repo/crawler",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "start": "node -r tsx/cjs src/index.ts"
