@@ -1,14 +1,26 @@
 import { getGameTeamsForCombos } from '@repo/club-store'
 import {
   aggregateTeamCombos,
+  computeTeamComboDetail,
   type GameTeamComboRow,
   type TeamComboRow,
   type TeamComboSize,
   type TeamComboSort,
+  type TeamComboDetail,
+  type RankBucket,
+  type CharacterContrib,
 } from './team-combo-utils'
 
-export type { TeamComboRow, TeamComboSize, TeamComboSort, GameTeamComboRow }
-export { aggregateTeamCombos }
+export type {
+  TeamComboRow,
+  TeamComboSize,
+  TeamComboSort,
+  GameTeamComboRow,
+  TeamComboDetail,
+  RankBucket,
+  CharacterContrib,
+}
+export { aggregateTeamCombos, computeTeamComboDetail }
 
 export const getTeamComboRows = async (): Promise<GameTeamComboRow[]> =>
   getGameTeamsForCombos()

@@ -9,8 +9,8 @@ export { getVisionSource, getRankerVisionBenchmark } from "./vision-source-servi
 export type { VisionSourceResult, VisionStatsSummary, RankerVisionBenchmark, GameDetail } from "./vision-source-service";
 export { getPhaseCombat } from "./phase-combat-service";
 export type { PhaseCombatResult, CombatGame, AreaDeathStat } from "./phase-combat-service";
-export { getTeamCombos, getTeamComboRows, aggregateTeamCombos } from "./team-combo-service";
-export type { TeamComboRow, TeamComboSize, TeamComboSort, GameTeamComboRow } from "./team-combo-service";
+export { getTeamCombos, getTeamComboRows, aggregateTeamCombos, computeTeamComboDetail } from "./team-combo-service";
+export type { TeamComboRow, TeamComboSize, TeamComboSort, GameTeamComboRow, TeamComboDetail, RankBucket, CharacterContrib } from "./team-combo-service";
 export { getCharacterAnalysis } from "./character-analysis-service";
 export type { CharacterAnalysisResult, PickWinRow, SlotItemStats, TraitCoreGroup, TraitSubComboRow, FinalBuildRow, KillVsRow, WeaponTypeGroup, WeaponTypeSummary, MmrByPlacement } from "./character-analysis-service";
 export { getPlayerCharacterWeaponStats, weaponGroupToCompareSide } from "./character-compare-service";
