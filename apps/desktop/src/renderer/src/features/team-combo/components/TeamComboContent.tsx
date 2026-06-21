@@ -124,6 +124,12 @@ const AvgCell = styled.div`
   gap: ${({ theme }) => theme.spacing[0.5]};
 `
 
+const RpValue = styled.span<{ $positive: boolean }>`
+  ${({ theme }) => css(theme.typography.styles.bodyBold)}
+  color: ${({ $positive, theme }) =>
+    $positive ? theme.colors.brand.green : theme.colors.semantic.negative};
+`
+
 const EmptyBox = styled.div`
   padding: ${({ theme }) => theme.spacing[12]} ${({ theme }) => theme.spacing[5]};
   text-align: center;
@@ -157,7 +163,6 @@ const SIZE_TABS: { key: TeamComboSize; label: string }[] = [
 ]
 
 const SORT_TABS: { key: TeamComboSort; label: string }[] = [
-  { key: 'rank1Rate', label: '1등 비율 순' },
   { key: 'mmrGain', label: '획득 RP 순' },
   { key: 'kills', label: '킬 수 순' },
 ]
@@ -227,9 +232,9 @@ const ComboRow = ({
     <ComboCharacters characterNums={combo.characterNums} highlightId={highlightId} />
     <RankRates combo={combo} />
     <AvgCell>
-      <Text variant="bodyBold">
+      <RpValue $positive={combo.avgMmrGain >= 0}>
         {combo.avgMmrGain >= 0 ? '+' : ''}{combo.avgMmrGain.toFixed(1)} RP
-      </Text>
+      </RpValue>
       <Text variant="caption" color="secondary">
         킬 {combo.avgKills.toFixed(1)}
       </Text>
@@ -243,7 +248,7 @@ const ComboRow = ({
 
 export const TeamComboContent = () => {
   const [size, setSize] = useState<TeamComboSize>(2)
-  const [sort, setSort] = useState<TeamComboSort>('rank1Rate')
+  const [sort, setSort] = useState<TeamComboSort>('mmrGain')
   const [characterFilter, setCharacterFilter] = useState<number | null>(null)
   const [page, setPage] = useState(1)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)

@@ -110,6 +110,13 @@ export type TeamMemberSnapshot = {
   player_kill: number
   player_assistant: number
   mmr_gain: number
+  damage_to_player: number
+  damage_from_player: number
+  damage_to_monster: number
+  play_time: number
+  equipment_slot0: number | null
+  tactical_skill_group: number
+  trait_first_core: number
 }
 
 export type GameTeamComboRow = {

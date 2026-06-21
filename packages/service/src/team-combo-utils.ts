@@ -5,7 +5,11 @@ export type TeamMemberSnapshot = {
   mmr_gain: number
   damage_to_player: number
   damage_from_player: number
+  damage_to_monster: number
   play_time: number
+  equipment_slot0: number | null
+  tactical_skill_group: number
+  trait_first_core: number
 }
 
 export type GameTeamComboRow = {
@@ -15,7 +19,7 @@ export type GameTeamComboRow = {
   members: TeamMemberSnapshot[]
 }
 
-export type TeamComboSort = 'rank1Rate' | 'mmrGain' | 'kills'
+export type TeamComboSort = 'mmrGain' | 'kills'
 
 export type TeamComboSize = 2 | 3
 
@@ -124,7 +128,6 @@ export const aggregateTeamCombos = (
   }))
 
   const compare = (a: TeamComboRow, b: TeamComboRow): number => {
-    if (sort === 'rank1Rate') return b.rank1Rate - a.rank1Rate || b.games - a.games
     if (sort === 'mmrGain') return b.avgMmrGain - a.avgMmrGain || b.games - a.games
     return b.avgKills - a.avgKills || b.games - a.games
   }

@@ -27,7 +27,11 @@ type GameTeamRow = {
     mmr_gain: number;
     damage_to_player: number;
     damage_from_player: number;
+    damage_to_monster: number;
     play_time: number;
+    equipment_slot0: number | null;
+    tactical_skill_group: number;
+    trait_first_core: number;
   }[];
 };
 
@@ -249,7 +253,11 @@ const parseGameTeams = (all: UserGame[]): GameTeamRow[] => {
         mmr_gain: m.mmrGain,
         damage_to_player: m.damageToPlayer,
         damage_from_player: m.damageFromPlayer,
+        damage_to_monster: m.damageToMonster,
         play_time: m.playTime,
+        equipment_slot0: m.equipment?.["0"] ?? null,
+        tactical_skill_group: m.tacticalSkillGroup,
+        trait_first_core: m.traitFirstCore,
       })),
     });
   }

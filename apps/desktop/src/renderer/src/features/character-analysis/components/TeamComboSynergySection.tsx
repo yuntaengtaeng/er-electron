@@ -45,7 +45,7 @@ const ListCard = styled.div`
   overflow: hidden;
 `
 
-const GRID_COLS = '20px 1fr 52px 36px'
+const GRID_COLS = '20px 1fr 68px 36px'
 
 const ListRow = styled.div`
   display: grid;
@@ -86,6 +86,12 @@ const StatCell = styled.div`
   text-align: right;
 `
 
+const RpValue = styled.span<{ $positive: boolean }>`
+  ${({ theme }) => css(theme.typography.styles.captionBold)}
+  color: ${({ $positive, theme }) =>
+    $positive ? theme.colors.brand.green : theme.colors.semantic.negative};
+`
+
 const EmptyBox = styled.div`
   padding: ${({ theme }) => theme.spacing[4]} ${({ theme }) => theme.spacing[3]};
   text-align: center;
@@ -99,7 +105,7 @@ type Props = {
 
 export const TeamComboSynergySection = ({ characterNum }: Props) => {
   const [size, setSize] = useState<TeamComboSize>(2)
-  const { combos, loading, error } = useTeamCombos(size, 'rank1Rate', characterNum)
+  const { combos, loading, error } = useTeamCombos(size, 'mmrGain', characterNum)
   const visible = combos.slice(0, DISPLAY_LIMIT)
 
   return (
@@ -160,7 +166,9 @@ export const TeamComboSynergySection = ({ characterNum }: Props) => {
               })}
             </CharStack>
             <StatCell>
-              <Text variant="captionBold">{combo.rank1Rate.toFixed(1)}%</Text>
+              <RpValue $positive={combo.avgMmrGain >= 0}>
+                {combo.avgMmrGain >= 0 ? '+' : ''}{combo.avgMmrGain.toFixed(1)} RP
+              </RpValue>
             </StatCell>
             <StatCell>
               <Text variant="caption" color="secondary">{combo.games}</Text>
