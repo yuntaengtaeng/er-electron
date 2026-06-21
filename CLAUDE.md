@@ -438,6 +438,37 @@ padding-right: ${spacing[8]};  // ✅
 pnpm dev          # 전체 turbo dev (루트에서 실행)
 ```
 
+## Claude 에이전트 (`.claude/agents/`)
+
+이 프로젝트에는 두 개의 전용 Claude 에이전트가 있다. 대화 중 에이전트를 지정하면 해당 에이전트의 전문 지식으로 응답한다.
+
+### `doc-manager` — 문서 관리 에이전트
+
+코드 변경 후 관련 문서(`CLAUDE.md`, `README.md`, `supabase.md`, `guide/design/DESIGN.MD`, `guide/er-specs/SPECS.MD`)를 선택적으로 업데이트하거나 새 문서를 생성한다.
+
+**사용 예시**
+```
+"doc-manager 에이전트로 마지막 커밋 분석하고 문서 업데이트해줘"
+"오늘 작업한 내용 기반으로 관련 문서 정리해줘"
+"새로 추가한 서비스 함수 CLAUDE.md에 반영해줘"
+```
+
+**업데이트 기준**: 신규 기능·스키마 변경·API 필드 추가·아키텍처 패턴 변경은 업데이트. 버그픽스·리팩토링·스타일 수정은 스킵.
+
+### `er-domain` — 이터널 리턴 도메인 전문가 에이전트
+
+BSER API 응답 구조, UserGame 필드 quirk, Supabase 스키마, 게임 용어를 깊이 알고 있다. 신규 기능 구현 시 올바른 필드명·쿼리 패턴을 빠르게 확인할 때 사용한다.
+
+**사용 예시**
+```
+"er-domain 에이전트한테 물어봐줘 — killMonsters 키가 왜 문자열이야?"
+"er-domain으로 game_teams.members에서 무기 종류 꺼내는 방법 알려줘"
+"er-domain 에이전트가 이 Supabase 쿼리 맞는지 검토해줘"
+"신규 feature 구현 전에 er-domain한테 관련 API 필드 정리해달라고 해줘"
+```
+
+**주요 지식**: API 엔드포인트 전체, `masteryLevel` 사용 금지 이유, `equipment["0"]` 무기 판별법, `game_teams.members` JSON 스키마, `club-store` 함수 목록, 자주 하는 실수 10가지.
+
 ## 환경변수 파일 위치
 
 - `apps/desktop/.env` — `VITE_API_KEY`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (renderer용, git 제외)
