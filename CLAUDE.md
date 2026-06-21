@@ -469,6 +469,52 @@ BSER API 응답 구조, UserGame 필드 quirk, Supabase 스키마, 게임 용어
 
 **주요 지식**: API 엔드포인트 전체, `masteryLevel` 사용 금지 이유, `equipment["0"]` 무기 판별법, `game_teams.members` JSON 스키마, `club-store` 함수 목록, 자주 하는 실수 10가지.
 
+## Claude 스킬 (`.claude/skills/`)
+
+반복 작업을 자동화하는 슬래시 커맨드. 대화 중 지시하면 실행된다.
+
+### `/season-update` — 시즌 업데이트
+
+새 시즌 시작 시 변경이 필요한 항목을 순서대로 처리한다.
+
+- `packages/service/src/er-service.ts` — `CURRENT_SEASON_ID` 수정
+- `apps/crawler/src/collect.ts` — `CURRENT_SEASON_ID` 수정
+- `shared/constants/ko-json/seasons.json` — `isCurrent` 갱신
+- 변경 후 자동 커밋
+
+```
+"시즌 업데이트 해줘" / "season-update 해줘"
+```
+
+### `/design-check` — 디자인 토큰 검사
+
+현재 변경 파일에서 토큰 규칙 위반을 탐지하고 올바른 대안을 제시한다.
+
+- 하드코딩 색상 (`#fff`, `rgba(...)` 등)
+- 존재하지 않는 spacing 키 (`spacing[7]`, `spacing[9]` 등 — 유효 키 목록은 스타일 원칙 섹션 참고)
+- styled-components 내부 직접 px 값
+- 4값 padding 단축속성 + 여러 줄 인터폴레이션
+
+```
+"design-check 해줘" / "디자인 토큰 검사해줘"
+```
+
+### `/supabase-migrate` — 스키마 마이그레이션
+
+테이블 스키마 변경 시 마이그레이션 SQL 생성 → onConflict 검증 → 실행 순서 체크리스트를 안내한다.
+
+```
+"supabase-migrate 해줘" / "마이그레이션 해줘"
+```
+
+### `/배포` — 앱 배포
+
+버전 bump → 패치노트 생성 → commit → tag → push → 빌드를 순서대로 처리한다.
+
+```
+"배포해줘"
+```
+
 ## 환경변수 파일 위치
 
 - `apps/desktop/.env` — `VITE_API_KEY`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (renderer용, git 제외)
